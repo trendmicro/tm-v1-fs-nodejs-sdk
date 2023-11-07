@@ -1,0 +1,22 @@
+{
+  "name": "cloudone-antimalware-aws-lambda-examples",
+  "version": "1.0.0",
+  "description": "Cloud One Antimalware API library examples for AWS Lambda in JavaScript",
+  "license": "MIT",
+  "author": "Trend Micro Inc",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "esbuild src/$SOURCE --bundle --platform=node --format=esm --packages=external --outfile=dist/index.js",
+    "postbuild": "cp package.json dist && cd dist && npm install --omit=dev && 7z a index.zip index.js package.json node_modules"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.299.0",
+    "esbuild": "^0.16.17",
+    "eslint": "^8.48.0"
+  },
+  "dependencies": {
+    "cloudone-vsapi": "^1.0.0"
+  }
+}

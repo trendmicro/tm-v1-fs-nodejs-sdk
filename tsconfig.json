@@ -1,0 +1,16 @@
+{
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "output",
+    "types": [
+      "node",
+      "jest"
+    ],
+    "allowJs": true
+  },
+  "include": [
+    "src",
+    "__tests__"
+  ]
+}

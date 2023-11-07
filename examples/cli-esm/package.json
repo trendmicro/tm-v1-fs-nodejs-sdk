@@ -1,0 +1,24 @@
+{
+  "name": "cloudone-antimalware-cli-client-examples",
+  "version": "1.0.0",
+  "description": "Cloud One Antimalware API library examples for CLI client in JavaScript",
+  "license": "MIT",
+  "author": "Trend Micro Inc",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=16.20.1"
+  },
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "mkdir dist && cp src/$SOURCE dist/index.js && cp src/loggerConfig.js dist",
+    "postbuild": "cp package.json dist && cp -R node_modules dist",
+    "client": "cd dist && node index.js"
+  },
+  "dependencies": {
+    "cloudone-vsapi": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.48.0"
+  }
+}

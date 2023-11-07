@@ -1,0 +1,187 @@
+import { statSync } from 'fs'
+import { status, credentials, Metadata, ServiceError } from '@grpc/grpc-js'
+
+import { ScanClient } from './scan_grpc_pb'
+import { ScanRun } from './scanRun'
+import { AmaasScanResultObject } from './amaasScanResultObject'
+import { AmaasCredentials } from './amaasCredentials'
+import { CallMetadataGenerator } from '@grpc/grpc-js/build/src/call-credentials'
+import { isJWT, getFQDN } from './utils'
+import { LogLevel, Logger } from './logger'
+
+type LogCallback = (level: LogLevel, message: string) => void
+
+/**
+ * Class AmaasGrpcClient
+ */
+export class AmaasGrpcClient {
+  private readonly scanClient: ScanClient
+  private readonly credentKey: string
+  private readonly timeout: number
+  private readonly logger: Logger
+
+  /**
+   * AmaasGrpcClient constructor
+   * @param amaasHostName - AMaaS host name or region name
+   * @param credent - AmaasCredentials object
+   * @param timeout - number in seconds to wait before closing the connection
+   * @param enableTLS - enabling TLS
+   */
+  constructor (
+    amaasHostName: string,
+    credent: AmaasCredentials | string,
+    timeout = 180,
+    enableTLS = true,
+  ) {
+    const key = typeof credent === 'string' ? credent : credent.secret
+    this.timeout = timeout
+    this.credentKey = 'Authorization'
+    this.logger = new Logger()
+    let hostname = amaasHostName
+
+    // Check if the hostname is a valid FQDN
+    if (!amaasHostName.includes('.') && !amaasHostName.includes('localhost')) {
+      hostname = amaasHostName.length > 0 ? getFQDN(amaasHostName) : hostname
+    }
+
+    try {
+      if (enableTLS === true) {
+        const channelCred = credentials.createSsl()
+        const metaCallback: CallMetadataGenerator = (
+          _params,
+          callback: (err: Error | null, metadata?: Metadata) => void
+        ) => {
+          const meta: Metadata = new Metadata()
+          meta.add(
+            this.credentKey,
+            isJWT(key)
+              ? `bearer ${key}`
+              : `apikey ${key}`
+          )
+          callback(null, meta)
+        }
+        const callCred =
+          credentials.createFromMetadataGenerator(metaCallback)
+        const combCred = credentials.combineChannelCredentials(
+          channelCred,
+          callCred
+        )
+        this.scanClient = new ScanClient(
+          hostname,
+          combCred,
+          { 'grpc.service_config_disable_resolution': 1 }
+        )
+      } else {
+        this.scanClient = new ScanClient(
+          hostname,
+          credentials.createInsecure(),
+          { 'grpc.service_config_disable_resolution': 1 }
+        )
+      }
+    } catch (err) {
+      const _err = err as Error
+      throw new Error(`Failed to create scan client. ${_err.message}`)
+    }
+  }
+
+  /**
+   * Process error
+   *
+   * @param err - Error to process
+   */
+  private processError (err: ServiceError): Error {
+    let message: string
+
+    if (err.code !== undefined) {
+      if (err.code.toString() === 'EACCES') {
+        message = `Failed to open file. ${err.message}`
+      } else {
+        switch (err.code) {
+          case status.NOT_FOUND:
+            message = `The requested resource was not found. ${err.details}`
+            break
+          case status.PERMISSION_DENIED:
+            message = `You do not have sufficient permissions to access this resource. ${err.details}`
+            break
+          case status.UNAUTHENTICATED:
+            message = `You are not authenticated. ${err.details}`
+            break
+          case status.DEADLINE_EXCEEDED:
+            message = `The request deadline was exceeded. ${err.details}`
+            break
+          case status.UNAVAILABLE:
+            if (['HTTP Status: 429; Exceeds rate limit'].includes(err.details)) {
+              message = `Too many requests. ${err.details}`
+            } else {
+              message = `Service is not reachable. ${err.details}`
+            }
+            break
+          default:
+            message = err.details
+        }
+      }
+    } else {
+      message = err.message
+    }
+
+    return new Error(message)
+  }
+
+  /**
+   * Scan file and return result
+   *
+   * @param name - Filename
+   */
+  public async scanFile (name: string): Promise<AmaasScanResultObject> {
+    let size: number
+    try {
+      const stats = statSync(name)
+      size = stats.size
+    } catch (err) {
+      const _err = err as Error
+      throw new Error(`Failed to open file. ${_err.message}`)
+    }
+    const scanRun = new ScanRun(this.scanClient, this.timeout, this.logger)
+    return await scanRun
+      .scanFile(name, size)
+      .then(result => result)
+      .catch(err => {
+        throw this.processError(err)
+      })
+  }
+
+  /**
+   * Scan buffer and return scan result
+   *
+   * @param fileName - Filename
+   * @param buff - Buffer to scan
+   */
+  public async scanBuffer (fileName: string, buff: Buffer): Promise<AmaasScanResultObject> {
+    const scanRun = new ScanRun(this.scanClient, this.timeout, this.logger)
+    return await scanRun
+      .scanBuffer(fileName, buff)
+      .then(result => result)
+      .catch(err => {
+        throw this.processError(err)
+      })
+  }
+
+  /**
+   * Close scan client
+   */
+  public close = (): void => {
+    // Close channel
+    this.scanClient.getChannel().close()
+
+    // Close scan client
+    this.scanClient.close()
+  }
+
+  public setLoggingLevel = (level: LogLevel): void => {
+    this.logger.setLoggingLevel(level)
+  }
+
+  public configLoggingCallback = (cb: LogCallback): void => {
+    this.logger.configLoggingCallback(cb)
+  }
+}
