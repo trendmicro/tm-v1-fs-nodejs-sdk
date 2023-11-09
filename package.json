@@ -1,5 +1,5 @@
 {
-  "name": "cloudone-vsapi",
+  "name": "file-security-sdk",
   "version": "__PACKAGE_VERSION__",
   "description": "Cloud One Antimalware API library for JavaScript",
   "main": "index.js",

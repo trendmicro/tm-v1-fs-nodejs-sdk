@@ -1,4 +1,4 @@
-import { AmaasGrpcClient, LogLevel } from 'cloudone-vsapi'
+import { AmaasGrpcClient, LogLevel } from 'file-security-sdk'
 
 /**
  * Configure logger for AmaasGrpcClient.

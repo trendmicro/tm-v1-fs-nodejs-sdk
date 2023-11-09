@@ -17,6 +17,6 @@
     "eslint": "^8.48.0"
   },
   "dependencies": {
-    "cloudone-vsapi": "^1.0.0"
+    "file-security-sdk": "^1.0.0"
   }
 }

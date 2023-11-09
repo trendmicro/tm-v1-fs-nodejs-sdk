@@ -27,6 +27,6 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "cloudone-vsapi": "^1.0.0"
+    "file-security-sdk": "^1.0.0"
   }
 }

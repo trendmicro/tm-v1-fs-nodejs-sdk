@@ -1,11 +1,11 @@
-# Examples of Using Cloud One Antimalware API library for JavaScript
+# Examples of Using Trend Vision One File Security Node.js SDK
 
 Follow the instructions below to build and run example code.
 
 ## Prerequisites
 
 - NodeJS version 16.20.1+, 18.x or above
-- [Cloud One API Key](https://cloudone.trendmicro.com/docs/identity-and-account-management/c1-api-key/)
+- A Trend Vision One API key - for more information, see the [Trend Vision One API key documentation](https://docs.trendmicro.com/en-us/enterprise/trend-vision-one/administrative-setti/accountspartfoundati/api-keys.aspx).
 
 ## Build and Run Examples
 
@@ -23,11 +23,11 @@ The following instructions assumes you are at the `<top level>/client/ts/example
    cd cli-esm/
    ```
 
-2. Export the following environment variables. Replace `__YOUR_API_KEY_REGION__` and `__YOUR_CLOUD_ONE_API_KEY__` with your own API key region and Cloud One API key.
+2. Export the following environment variables. Replace `__YOUR_VISION_ONE_API_KEY_REGION__` and `__YOUR_VISION_ONE_API_KEY__` with your own API key region and Vision One API key.
 
    ```sh
-   export TM_AM_SERVER_ADDR=antimalware.__YOUR_API_KEY_REGION__.cloudone.trendmicro.com:443
-   export TM_AM_AUTH_KEY=__YOUR_CLOUD_ONE_API_KEY__
+   export TM_AM_SERVER_ADDR=fs-sdk-__YOUR_VISION_ONE_API_KEY_REGION__.xdr.trendmicro.com:443
+   export TM_AM_AUTH_KEY=__YOUR_VISION_ONE_API_KEY__
    ```
 
 3. To configuring the SDK's active logging level, export the following environment. The change is applied globally to all AMaaS Client instances. Valid values are OFF, FATAL, ERROR, WARN, INFO, and DEBUG; default level is OFF. Replace `__LOG_LEVEL__` with one of the valid values.
@@ -98,12 +98,12 @@ The following instructions assumes you are at the `<top level>/client/ts/example
 - Handler: index.handler
 - Architecture: x86_64 or arm64
 
-2. Set up environment variables for your function by clicking on "Configuration" and then "Environment variables". Add the following keys and values. Replace `__YOUR_API_KEY_REGION__` and `__YOUR_CLOUD_ONE_API_KEY__` with your own API key region and Cloud One API key.
+2. Set up environment variables for your function by clicking on "Configuration" and then "Environment variables". Add the following keys and values. Replace `__YOUR_VISION_ONE_API_KEY_REGION__` and `__YOUR_VISION_ONE_API_KEY__` with your own API key region and Vision One API key.
 
    |Key|Value|Default value|
    |---|---|---|
-   |TM_AM_SERVER_ADDR|antimalware.`__YOUR_API_KEY_REGION__`.cloudone.trendmicro.com:443|
-   |TM_AM_AUTH_KEY|`__YOUR_CLOUD_ONE_API_KEY__`|
+   |TM_AM_SERVER_ADDR|fs-sdk-`__YOUR_VISION_ONE_API_KEY_REGION__`.xdr.trendmicro.com:443|
+   |TM_AM_AUTH_KEY|`__YOUR_VISION_ONE_API_KEY__`|
    |TM_AM_LOG_LEVEL|FATAL \| ERROR \| WARN \| INFO \| DEBUG| OFF |
 
 3. Navigate to 'lambda/' or 'lambda-esm/'.

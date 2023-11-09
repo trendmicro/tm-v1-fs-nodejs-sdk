@@ -1,4 +1,4 @@
-import { AmaasGrpcClient, AmaasCredentials } from 'cloudone-vsapi'
+import { AmaasGrpcClient, AmaasCredentials } from 'file-security-sdk'
 import loggerConfig from './loggerConfig'
 
 /**
