@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import { AmaasGrpcClient } from 'cloudone-vsapi'
+import { AmaasGrpcClient } from 'file-security-sdk'
 import loggerConfig from './loggerConfig.js'
 
 /**

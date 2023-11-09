@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { readFileSync } from 'fs'
+import { readFileSync, statSync } from 'fs'
 import { loadSync } from '@grpc/proto-loader'
 import * as path from 'path'
 import {
@@ -14,8 +14,10 @@ import { AmaasScanResultObject } from '../src/lib/amaasScanResultObject'
 import { AmaasCredentials } from '../src/lib/amaasCredentials'
 import { Logger, LogLevel } from '../src/lib/logger'
 import * as scanPb from '../src/lib/scan_pb'
-import { isJWT } from '../src/lib/utils'
+import { isJWT, validateTags, getHashes, getBufferHashes } from '../src/lib/utils'
+import { readFile } from './utils/fileUtils'
 import { generateJwtToken } from './utils/jwtTokens'
+import { maxTagLength, maxTags } from '../src/lib/constants'
 
 const jestTimeout: number = 5 * 60 * 1000 // ms
 jest.setTimeout(jestTimeout)
@@ -47,15 +49,27 @@ const runImpl = (call: any): void => {
     stage: scanPb.Stage.STAGE_FINI,
     result: JSON.stringify({
       version: '1.0',
+      fileName: 'faked-file.txt',
       scanResult: 0,
       scanId: randomUUID(),
       scanTimestamp: new Date().toUTCString(),
       foundMalwares: []
     })
   }
-  call.on('data', (request: { stage: string; rs_size: number }) => {
+  call.on('data', (request: { stage: string; rs_size: number; tags?: string[] }) => {
     const stage: string = request.stage
     if (stage === 'STAGE_INIT') {
+      if (request.tags) {
+        const tags = request.tags
+        if (!tags.every(tag => ['tag1', 'tag2', 'tag3'].includes(tag))) {
+          const resultJson = JSON.parse(cmdQuitS2CMessage.result)
+          resultJson.scanResult = -1
+          cmdQuitS2CMessage.result = JSON.stringify(resultJson)
+          call.write(cmdQuitS2CMessage)
+          call.end()
+        }
+      }
+
       rsSize = request.rs_size
 
       // Returns CMD_QUIT if request's rs_size is zero
@@ -200,6 +214,16 @@ describe('AmaasGrpcClient scanFile function testing', () => {
       })
     amaasGrpcClient.close()
   })
+
+  it('should scan file with tags successfully', async () => {
+    const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
+    const tags = ['tag1', 'tag2', 'tag3']
+    await amaasGrpcClient.scanFile(filesToScan[0], tags)
+      .then(result => {
+        expect(result.scanResult).not.toEqual(-1)
+      })
+    amaasGrpcClient.close()
+  })
 })
 
 describe('AmaasGrpcClient scanBuffer function testing', () => {
@@ -247,6 +271,17 @@ describe('AmaasGrpcClient scanBuffer function testing', () => {
         })
       })
   })
+
+  it('should scan buffer with tags successfully', async () => {
+    const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
+    const buff = readFileSync(filesToScan[0])
+    const tags = ['tag1', 'tag2', 'tag3']
+    await amaasGrpcClient.scanBuffer(filesToScan[0], buff, tags)
+      .then(result => {
+        expect(result.scanResult).not.toEqual(-1)
+      })
+    amaasGrpcClient.close()
+  })
 })
 
 describe('error testing', () => {
@@ -260,7 +295,7 @@ describe('error testing', () => {
   })
   it('should return an error if invalid region', () => {
     const region = 'us1'
-    const error = new Error(`Invalid region: ${region}`)
+    const error = new Error(`Invalid region: ${region}, region value should be one of au-1,ca-1,de-1,gb-1,in-1,jp-1,sg-1,us-1,ap-southeast-2,eu-central-1,ap-south-1,ap-northeast-1,ap-southeast-1,us-east-1`)
     expect(() => {
       const amaasScanClient = new AmaasGrpcClient(region, authKey)
       expect(amaasScanClient).toBeUndefined()
@@ -298,6 +333,16 @@ describe('error testing', () => {
     }).rejects.toEqual(error)
     amaasGrpcClient.close()
   })
+
+  it('should return scanResult equals to -1 for invalid tags', async () => {
+    const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
+    const tags = ['tag1', 'tag2', 'tag4']
+    await amaasGrpcClient.scanFile(filesToScan[0], tags)
+      .then(result => {
+        expect(result.scanResult).toEqual(-1)
+      })
+    amaasGrpcClient.close()
+  })
 })
 
 describe('isJWT function testing', () => {
@@ -326,6 +371,51 @@ describe('isJWT function testing', () => {
   })
 })
 
+describe('Utils testing', () => {
+  it('validateTags should return true if tags list does not exceed maxTagsSize', async () => {
+    const tags = ['tag1', 'tag2', 'tag3']
+    const isValid = validateTags(tags)
+    expect(isValid).toBe(true)
+  })
+  it('validateTags should return Error if tags list exceeds maxTagsSize', async () => {
+    const tags = (() => {
+      const tags = [] as string[]
+      for (let i = 0; i < maxTags + 1; i++) {
+        tags.push(`tag${i}`)
+      }
+      return tags
+    })()
+    const error = new Error(`Tags size ${tags.length} is greater than ${maxTags}: ${tags}`)
+    expect(() => {
+      validateTags(tags)
+    }).toThrowError(error)
+  })
+  it('getHashes should return sha256 and sha1 correctly', async () => {
+    await expect(getHashes(filesToScan[0], ['sha256', 'sha1'], 'hex'))
+      .resolves.toEqual(['aee0f54d87f888dce437f56f7da52dc7c35081ae27218facd2ecd1d10e5552d6', '89e5eee8a309074bf3a71001a011adfaffadb4b3'])
+  })
+  it('getBufferHashes should return sha256 and sha1 correctly', async () => {
+    const buff = readFile(filesToScan[0], statSync(filesToScan[0]).size)
+    await expect(getBufferHashes(buff, ['sha256', 'sha1'], 'hex'))
+      .resolves.toEqual(['aee0f54d87f888dce437f56f7da52dc7c35081ae27218facd2ecd1d10e5552d6', '89e5eee8a309074bf3a71001a011adfaffadb4b3'])
+  })
+  it('validateTags should return true if each tag size does not exceed maxTagLength', async () => {
+    const tags = ['tag1', 'tag2', 'tag3']
+    const isValid = validateTags(tags)
+    expect(isValid).toBe(true)
+  })
+  it('validateTags should return Error if each tag size exceeds maxTagLength', async () => {
+    const tags0 = (() => {
+      const tag = 'a'.repeat(maxTagLength + 1)
+      return tag
+    })()
+    const tags = [tags0]
+    const error = new Error(`Tag size ${tags[0].length} is greater than ${maxTagLength}: ${tags[0]}`)
+    expect(() => {
+      validateTags(tags)
+    }).toThrowError(error)
+  })
+})
 describe('Logger class testing', () => {
   const OLD_ENV = process.env
   let logSpy: jest.SpyInstance

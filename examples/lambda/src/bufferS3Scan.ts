@@ -1,7 +1,7 @@
 import type { Readable } from 'stream'
 import { S3Event } from 'aws-lambda'
 import { S3Client, S3ClientConfig, GetObjectCommand } from '@aws-sdk/client-s3'
-import { AmaasGrpcClient, AmaasCredentials } from 'cloudone-vsapi'
+import { AmaasGrpcClient, AmaasCredentials } from 'file-security-sdk'
 import loggerConfig from './loggerConfig'
 
 /**

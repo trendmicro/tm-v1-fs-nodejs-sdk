@@ -23,7 +23,7 @@ build:
 		.
 	$(SED) 's/$(VERSION)/__PACKAGE_VERSION__/' ./package.json
 	mkdir -p output
-	docker run --rm $(IMAGE_NAME) tar -cz cloudone-vsapi-$(VERSION).tgz | tar xzf - -C output
+	docker run --rm $(IMAGE_NAME) tar -cz file-security-sdk-$(VERSION).tgz | tar xzf - -C output
 
 test:
 	cp ./protos/scan.proto scan.proto

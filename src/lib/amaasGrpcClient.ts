@@ -6,7 +6,7 @@ import { ScanRun } from './scanRun'
 import { AmaasScanResultObject } from './amaasScanResultObject'
 import { AmaasCredentials } from './amaasCredentials'
 import { CallMetadataGenerator } from '@grpc/grpc-js/build/src/call-credentials'
-import { isJWT, getFQDN } from './utils'
+import {getFQDN, validateTags } from './utils'
 import { LogLevel, Logger } from './logger'
 
 type LogCallback = (level: LogLevel, message: string) => void
@@ -19,6 +19,7 @@ export class AmaasGrpcClient {
   private readonly credentKey: string
   private readonly timeout: number
   private readonly logger: Logger
+  private readonly appNameHeader: string
 
   /**
    * AmaasGrpcClient constructor
@@ -26,16 +27,19 @@ export class AmaasGrpcClient {
    * @param credent - AmaasCredentials object
    * @param timeout - number in seconds to wait before closing the connection
    * @param enableTLS - enabling TLS
+   * @param appName - application name
    */
   constructor (
     amaasHostName: string,
     credent: AmaasCredentials | string,
     timeout = 180,
     enableTLS = true,
+    appName = 'V1FS'
   ) {
     const key = typeof credent === 'string' ? credent : credent.secret
     this.timeout = timeout
     this.credentKey = 'Authorization'
+    this.appNameHeader = 'tm-app-name'
     this.logger = new Logger()
     let hostname = amaasHostName
 
@@ -54,9 +58,11 @@ export class AmaasGrpcClient {
           const meta: Metadata = new Metadata()
           meta.add(
             this.credentKey,
-            isJWT(key)
-              ? `bearer ${key}`
-              : `apikey ${key}`
+            `apikey ${key}`
+          )
+          meta.add(
+            this.appNameHeader,
+            appName
           )
           callback(null, meta)
         }
@@ -127,21 +133,37 @@ export class AmaasGrpcClient {
     return new Error(message)
   }
 
+  // Init a scan run
+  private initScanRun (tags?: string[]): ScanRun {
+    let scanRun: ScanRun
+
+    if (tags) {
+      validateTags(tags)
+      scanRun = new ScanRun(this.scanClient, this.timeout, this.logger, tags)
+    } else {
+      scanRun = new ScanRun(this.scanClient, this.timeout, this.logger)
+    }
+
+    return scanRun
+  }
+
   /**
    * Scan file and return result
    *
    * @param name - Filename
+   * @param tags - Tags to be added to the scan request
    */
-  public async scanFile (name: string): Promise<AmaasScanResultObject> {
+  public async scanFile (name: string, tags?: string[]): Promise<AmaasScanResultObject> {
     let size: number
+
     try {
-      const stats = statSync(name)
-      size = stats.size
+      size = statSync(name).size
     } catch (err) {
       const _err = err as Error
       throw new Error(`Failed to open file. ${_err.message}`)
     }
-    const scanRun = new ScanRun(this.scanClient, this.timeout, this.logger)
+
+    const scanRun = this.initScanRun(tags)
     return await scanRun
       .scanFile(name, size)
       .then(result => result)
@@ -155,9 +177,10 @@ export class AmaasGrpcClient {
    *
    * @param fileName - Filename
    * @param buff - Buffer to scan
+   * @param tags - Tags to be added to the scan request
    */
-  public async scanBuffer (fileName: string, buff: Buffer): Promise<AmaasScanResultObject> {
-    const scanRun = new ScanRun(this.scanClient, this.timeout, this.logger)
+  public async scanBuffer (fileName: string, buff: Buffer, tags?: string[]): Promise<AmaasScanResultObject> {
+    const scanRun = this.initScanRun(tags)
     return await scanRun
       .scanBuffer(fileName, buff)
       .then(result => result)

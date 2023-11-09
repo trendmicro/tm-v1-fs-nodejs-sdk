@@ -66,7 +66,7 @@ Create a new instance of the `AmaasGrpcClient` class.
 **_Return_**
 An AmaasGrpcClient instance
 
-#### `scanFile(name: string): Promise<AmaasScanResultObject>`
+#### `scanFile(name: string, tags?: string[]): Promise<AmaasScanResultObject>`
 
 Scan a file for malware and retrieves response data from the API.
 
@@ -75,11 +75,12 @@ Scan a file for malware and retrieves response data from the API.
 | Parameter | Description                                                              | Default value |
 | --------- | ------------------------------------------------------------------------ | ------------- |
 | name      | The name of the file with path of directory containing the file to scan. |               |
+| tags      | `(Optional)` The list of tags which can be used to tag the scan.  Max size of tags list is 8. Max size of each tag is 63.|               |
 
 **_Return_**
 A Promise that resolves to the API response data.
 
-#### `scanBuffer(fileName: string, buff: Buffer): Promise<AmaasScanResultObject>`
+#### `scanBuffer(fileName: string, buff: Buffer, tags?: string[]): Promise<AmaasScanResultObject>`
 
 Scan a buffer for malware and retrieves response data from the API.
 
@@ -89,6 +90,7 @@ Scan a buffer for malware and retrieves response data from the API.
 | --------- | --------------------------------------------------------------------------------------------------- | ------------- |
 | fileName  | The name of the file or object the buffer is created from. The name is used to identify the buffer. |               |
 | buff      | The buffer to scan.                                                                                 |               |
+| tags      | `(Optional)` The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63.|               |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -194,14 +196,15 @@ try {
 
   // Example of scanFile
   const fileToScan = "path/to/file.ext";
-  const fileScanResult = await scanClient.scanFile(fileToScan);
+  const fileScanResult = await scanClient.scanFile(fileToScan, ['tag1', 'tag2', 'tag3']);
   console.log(`Number of malware found: ${result.scanResult}`); // Scan result handling
 
   // Example of scanBuffer
   const buff = await readFileSync(fileToScan);
   const bufferScanResult = await scanClient.scanBuffer(
     "THE_FILE_NAME_OR_IDENTIFIER",
-    buff
+    buff,
+    ['tag1', 'tag2', 'tag3']
   );
   console.log(
     `Number of malware found in buffer: ${bufferScanResult.scanResult}`

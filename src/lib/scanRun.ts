@@ -6,21 +6,27 @@ import { ScanClient } from './scan_grpc_pb'
 import { AmaasScanResultObject } from './amaasScanResultObject'
 import { Logger } from './logger'
 import { ClientDuplexStream, Deadline } from '@grpc/grpc-js'
+import { getBufferHashes, getHashes } from './utils'
+
+const sha1Prefix = 'sha1:'
+const sha256Prefix = 'sha256:'
 
 export class ScanRun {
   private readonly scanClient: ScanClient
   private readonly deadline: number
   private readonly logger: Logger
   private finalResult: AmaasScanResultObject
+  private readonly tags: string[]
 
-  constructor (scanClient: ScanClient, timeout: number, logger: Logger) {
+  constructor (scanClient: ScanClient, timeout: number, logger: Logger, tags?: string[]) {
     this.scanClient = scanClient
     this.deadline = timeout
     this.logger = logger
     this.finalResult = Object.create(null) as AmaasScanResultObject
+    this.tags = tags ?? []
   }
 
-  private async streamRun (fileName: string, fileSize: number, buff?: Buffer): Promise<AmaasScanResultObject> {
+  private async streamRun (fileName: string, fileSize: number, hashes: string[], buff?: Buffer): Promise<AmaasScanResultObject> {
     return await new Promise<AmaasScanResultObject>((resolve, reject) => {
       const _deadline: Deadline = new Date().getTime() + this.deadline * 1000
       const stream = this.scanClient.run({ deadline: _deadline })
@@ -43,6 +49,13 @@ export class ScanRun {
       const fileNameToSet = buff !== undefined ? fileName : basename(fileName)
       initRequest.setFileName(fileNameToSet)
       initRequest.setRsSize(fileSize)
+      if (this.tags) {
+        initRequest.setTagsList(this.tags)
+      }
+      this.logger.debug(`sha1: ${hashes[1]}`)
+      this.logger.debug(`sha256: ${hashes[0]}`)
+      initRequest.setFileSha1(`${sha1Prefix}${hashes[1]}`)
+      initRequest.setFileSha256(`${sha256Prefix}${hashes[0]}`)
       stream.write(initRequest)
     })
   }
@@ -86,7 +99,8 @@ export class ScanRun {
     name: string,
     size: number
   ): Promise<AmaasScanResultObject> {
-    return await this.streamRun(name, size)
+    const hashes = await getHashes(name, ['sha256', 'sha1'], 'hex')
+    return await this.streamRun(name, size, hashes)
       .then(result => {
         return result
       })
@@ -98,7 +112,8 @@ export class ScanRun {
     buff: Buffer
   ): Promise<AmaasScanResultObject> {
     const size = Buffer.byteLength(buff)
-    return await this.streamRun(name, size, buff)
+    const hashes = await getBufferHashes(buff, ['sha256', 'sha1'], 'hex')
+    return await this.streamRun(name, size, hashes, buff)
       .then(result => result)
       .catch(err => { throw err })
   }
