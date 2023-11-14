@@ -58,7 +58,7 @@ export class AmaasGrpcClient {
           const meta: Metadata = new Metadata()
           meta.add(
             this.credentKey,
-            `apikey ${key}`
+            `ApiKey ${key}`
           )
           meta.add(
             this.appNameHeader,
