@@ -1,6 +1,8 @@
 # Trend Vision One File Security Node.js SDK User Guide
 
-The Trend Vision One File Security Node.js SDK is a software development kit used for interacting with Trend Vision One anti-malware file scanning service. It is used to build file scanning applications on top of the Trend Vision One platform.
+The Trend Vision One File Security Node.js SDK empowers developers to craft applications seamlessly integrating with the cloud-based Trend Vision One anti-malware file scanning service. This ensures a thorough scan of data and artifacts within the applications, identifying potential malicious elements.
+
+This guide outlines the steps to establish your development environment and configure your project, laying the foundation for utilizing the File Security Node.js SDK effectively.
 
 ## Prerequisites
 
@@ -32,7 +34,7 @@ To initiate a new instance of the AmaasGrpcClient, we need to supply the AMaaSHo
 import { AmaasGrpcClient } from "file-security-sdk";
 
 // Use FQDN with or without port. Replace __REGION__ with the region of your Vision One account
-const amaasHostName = "fs-sdk-__REGION__.xdr.trendmicro.com:443";
+const amaasHostName = "antimalware.__REGION__.cloudone.trendmicro.com:443";
 
 // Use region. Replace __REGION__ with the region of your Vision One account
 const amaasHostName = __REGION__;
@@ -176,7 +178,7 @@ import { AmaasGrpcClient, LogLevel } from "file-security-sdk";
 import { readFileSync } from "fs/promises";
 
 // Use FQDN with or without port. Replace __REGION__ with the region of your Vision One account
-const amaasHostName = "fs-sdk-__REGION__.xdr.trendmicro.com:443";
+const amaasHostName = "antimalware.__REGION__.cloudone.trendmicro.com:443";
 
 // Use region. Replace __REGION__ with the region of your Vision One account
 const amaasHostName = __REGION__;
