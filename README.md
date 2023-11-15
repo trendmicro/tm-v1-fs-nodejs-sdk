@@ -60,7 +60,7 @@ Create a new instance of the `AmaasGrpcClient` class.
 
 | Parameter     | Description                                                                              | Default value |
 | ------------- | ---------------------------------------------------------------------------------------- | ------------- |
-| amaasHostName | The AMaaS server address or the region of your Vision One account.                                                                |               |
+| amaasHostName | The AMaaS server address or the region of your Vision One account. The region is the location where you acquire your api key.  Value provided must be one of the Vision One regions, e.g. `us-east-1`, `eu-central-1`, `ap-northeast-1`, `ap-southeast-2`, `ap-southeast-1`, etc.                                                               |               |
 | credent       | Your own Vision One API Key.                                                              |               |
 | timeout       | Timeout to cancel the connection to server in seconds.                                   | 180           |
 | enableTLS     | Enable or disable TLS. TLS should always be enabled when connecting to the AMaaS server. | true          |
