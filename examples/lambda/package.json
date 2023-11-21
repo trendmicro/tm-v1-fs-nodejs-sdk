@@ -1,7 +1,7 @@
 {
-  "name": "cloudone-antimalware-aws-lambda-examples",
+  "name": "file-security-aws-lambda-examples",
   "version": "1.0.0",
-  "description": "Cloud One Antimalware API library examples for AWS Lambda in JavaScript",
+  "description": "Vision One File Security API library examples for AWS Lambda in TypeScript",
   "license": "MIT",
   "author": "Trend Micro Inc",
   "main": "index.js",
