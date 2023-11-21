@@ -54,7 +54,7 @@ FROM node:16.20.1-slim@sha256:f66adfa1694f8345d2ec4c2dedded87055be5182f62ac33032
 RUN useradd -m su-amaas
 
 ARG PACK_CMD=pack
-ENV NPM_TOKEN=${NPM_TOKEN}
+ARG NPM_TOKEN=${NPM_TOKEN}
 
 USER su-amaas
 
@@ -63,4 +63,6 @@ COPY --from=build_env --chown=su-amaas:su-amaas /home/su-amaas/output /home/su-a
 WORKDIR /home/su-amaas/output
 
 ## Publish JavaScript node package
-RUN npm ${PACK_CMD}
+RUN npm config set //registry.npmjs.org/:_authToken=${NPM_TOKEN} && \
+    npm ${PACK_CMD} --access public && \
+    npm config delete _authToken
