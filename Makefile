@@ -19,7 +19,7 @@ build:
 	$(SED) 's/__PACKAGE_VERSION__/$(VERSION)/' ./package.json
 	docker build \
 		-t $(IMAGE_NAME) \
-		--build-arg NPM_TOKEN=$(NPM_TOKEN) \
+		--build-arg NPM_TOKEN=$(NODE_AUTH_TOKEN) \
 		--build-arg PACK_CMD=publish \
 		--build-arg TM_AM_LOG_LEVEL=$(TM_AM_LOG_LEVEL) \
 		.
