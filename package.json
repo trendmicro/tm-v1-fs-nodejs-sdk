@@ -1,7 +1,7 @@
 {
   "name": "file-security-sdk",
   "version": "__PACKAGE_VERSION__",
-  "description": "Cloud One Antimalware API library for JavaScript",
+  "description": "Vision One File Security API library in TypeScript",
   "main": "index.js",
   "engines": {
     "node": ">=16.20.1"
@@ -15,15 +15,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/trendmicro/cloudone-antimalware-nodejs-sdk.git"
+    "url": "https://github.com/trendmicro/tm-v1-fs-nodejs-sdk.git"
   },
   "keywords": [],
   "author": "Trend Micro Inc",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trendmicro/cloudone-antimalware-nodejs-sdk/issues"
+    "url": "https://github.com/trendmicro/tm-v1-fs-nodejs-sdk/issues"
   },
-  "homepage": "https://github.com/trendmicro/cloudone-antimalware-nodejs-sdk",
+  "homepage": "https://github.com/trendmicro/tm-v1-fs-nodejs-sdk",
   "dependencies": {
     "@grpc/grpc-js": "^1.8.10",
     "google-protobuf": "^3.21.2"

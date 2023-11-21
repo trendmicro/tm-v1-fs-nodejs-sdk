@@ -26,7 +26,7 @@ The following instructions assumes you are at the `<top level>/client/ts/example
 2. Export the following environment variables. Replace `__YOUR_VISION_ONE_API_KEY_REGION__` and `__YOUR_VISION_ONE_API_KEY__` with your own API key region and Vision One API key.
 
    ```sh
-   export TM_AM_SERVER_ADDR=fs-sdk-__YOUR_VISION_ONE_API_KEY_REGION__.xdr.trendmicro.com:443
+   export TM_AM_SERVER_ADDR=__YOUR_VISION_ONE_API_KEY_REGION__
    export TM_AM_AUTH_KEY=__YOUR_VISION_ONE_API_KEY__
    ```
 
@@ -102,7 +102,7 @@ The following instructions assumes you are at the `<top level>/client/ts/example
 
    |Key|Value|Default value|
    |---|---|---|
-   |TM_AM_SERVER_ADDR|fs-sdk-`__YOUR_VISION_ONE_API_KEY_REGION__`.xdr.trendmicro.com:443|
+   |TM_AM_SERVER_ADDR|`__YOUR_VISION_ONE_API_KEY_REGION__`|
    |TM_AM_AUTH_KEY|`__YOUR_VISION_ONE_API_KEY__`|
    |TM_AM_LOG_LEVEL|FATAL \| ERROR \| WARN \| INFO \| DEBUG| OFF |
 

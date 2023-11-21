@@ -33,9 +33,6 @@ To initiate a new instance of the AmaasGrpcClient, we need to supply the AMaaSHo
 ```typescript
 import { AmaasGrpcClient } from "file-security-sdk";
 
-// Use FQDN with or without port. Replace __REGION__ with the region of your Vision One account
-const amaasHostName = "antimalware.__REGION__.cloudone.trendmicro.com:443";
-
 // Use region. Replace __REGION__ with the region of your Vision One account
 const amaasHostName = __REGION__;
 
@@ -58,12 +55,12 @@ Create a new instance of the `AmaasGrpcClient` class.
 
 **_Parameters_**
 
-| Parameter     | Description                                                                              | Default value |
-| ------------- | ---------------------------------------------------------------------------------------- | ------------- |
-| amaasHostName | The AMaaS server address or the region of your Vision One account. The region is the location where you acquire your api key.  Value provided must be one of the Vision One regions, e.g. `us-east-1`, `eu-central-1`, `ap-northeast-1`, `ap-southeast-2`, `ap-southeast-1`, etc.                                                               |               |
-| credent       | Your own Vision One API Key.                                                              |               |
-| timeout       | Timeout to cancel the connection to server in seconds.                                   | 180           |
-| enableTLS     | Enable or disable TLS. TLS should always be enabled when connecting to the AMaaS server. | true          |
+| Parameter     | Description                                                                                                                                                                                                                                          | Default value |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| amaasHostName | The region of your Vision One account. The region is the location where you acquire your api key. Value provided must be one of the Vision One regions, e.g. `us-east-1`, `eu-central-1`, `ap-northeast-1`, `ap-southeast-2`, `ap-southeast-1`, etc. |               |
+| credent       | Your own Vision One API Key.                                                                                                                                                                                                                         |               |
+| timeout       | Timeout to cancel the connection to server in seconds.                                                                                                                                                                                               | 180           |
+| enableTLS     | Enable or disable TLS. TLS should always be enabled when connecting to the AMaaS server.                                                                                                                                                             | true          |
 
 **_Return_**
 An AmaasGrpcClient instance
@@ -74,10 +71,10 @@ Scan a file for malware and retrieves response data from the API.
 
 **_Parameters_**
 
-| Parameter | Description                                                              | Default value |
-| --------- | ------------------------------------------------------------------------ | ------------- |
-| name      | The name of the file with path of directory containing the file to scan. |               |
-| tags      | `(Optional)` The list of tags which can be used to tag the scan.  Max size of tags list is 8. Max size of each tag is 63.|               |
+| Parameter | Description                                                                                                              | Default value |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| name      | The name of the file with path of directory containing the file to scan.                                                 |               |
+| tags      | `(Optional)` The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -88,11 +85,11 @@ Scan a buffer for malware and retrieves response data from the API.
 
 **_Parameters_**
 
-| Parameter | Description                                                                                         | Default value |
-| --------- | --------------------------------------------------------------------------------------------------- | ------------- |
-| fileName  | The name of the file or object the buffer is created from. The name is used to identify the buffer. |               |
-| buff      | The buffer to scan.                                                                                 |               |
-| tags      | `(Optional)` The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63.|               |
+| Parameter | Description                                                                                                              | Default value |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| fileName  | The name of the file or object the buffer is created from. The name is used to identify the buffer.                      |               |
+| buff      | The buffer to scan.                                                                                                      |               |
+| tags      | `(Optional)` The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -142,16 +139,17 @@ The following are the fields in the interface.
 
 ```typescript
 interface AmaasScanResultObject {
-  scanTimestamp: string        // Timestamp of the scan in ISO 8601 format
-  version: string              // Scan result schema version
-  fileName: string             // Name of the file scanned
-  scanId: string               // ID of the scan
-  scanResult: number           // Number of malwares found. A value of 0 means no malware was found
-  foundMalwares: [             // A list of malware names and the filenames found by AMaaS
+  scanTimestamp: string; // Timestamp of the scan in ISO 8601 format
+  version: string; // Scan result schema version
+  fileName: string; // Name of the file scanned
+  scanId: string; // ID of the scan
+  scanResult: number; // Number of malwares found. A value of 0 means no malware was found
+  foundMalwares: [
+    // A list of malware names and the filenames found by AMaaS
     {
       fileName: string; // File name which found the malware
       malwareName: string; // Malware name
-    },
+    }
   ];
 }
 ```
@@ -177,9 +175,6 @@ The following is an example of how to use the SDK to scan a file or buffer for m
 import { AmaasGrpcClient, LogLevel } from "file-security-sdk";
 import { readFileSync } from "fs/promises";
 
-// Use FQDN with or without port. Replace __REGION__ with the region of your Vision One account
-const amaasHostName = "antimalware.__REGION__.cloudone.trendmicro.com:443";
-
 // Use region. Replace __REGION__ with the region of your Vision One account
 const amaasHostName = __REGION__;
 
@@ -198,7 +193,11 @@ try {
 
   // Example of scanFile
   const fileToScan = "path/to/file.ext";
-  const fileScanResult = await scanClient.scanFile(fileToScan, ['tag1', 'tag2', 'tag3']);
+  const fileScanResult = await scanClient.scanFile(fileToScan, [
+    "tag1",
+    "tag2",
+    "tag3",
+  ]);
   console.log(`Number of malware found: ${result.scanResult}`); // Scan result handling
 
   // Example of scanBuffer
@@ -206,7 +205,7 @@ try {
   const bufferScanResult = await scanClient.scanBuffer(
     "THE_FILE_NAME_OR_IDENTIFIER",
     buff,
-    ['tag1', 'tag2', 'tag3']
+    ["tag1", "tag2", "tag3"]
   );
   console.log(
     `Number of malware found in buffer: ${bufferScanResult.scanResult}`
@@ -233,7 +232,7 @@ The actual message in the following table may be vary in different environment.
 | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Error: Name resolution failed for target dns:{server_address}                   | There is a network issue. Please verify the network connection to AMaaS server, and make sure the server address specified in the `AmaasGrpcClient` is correct. |
 | Error: Failed to create scan client. Could not parse target name ""             | The AMaaS server address is not set or is empty. Please make sure the server address specified in the `AmaasGrpcClient` is correct.                             |
-| Error: You are not authenticated. Invalid C1 token or Api Key                   | The API key is invalid. Please make sure a correct Vision One Api key is used.                                                                   |
+| Error: You are not authenticated. Invalid C1 token or Api Key                   | The API key is invalid. Please make sure a correct Vision One Api key is used.                                                                                  |
 | Error: Failed to open file. ENOENT: no such file or directory, stat {file_path} | The {file_path} specified in `scanFile` cannot be found. Please make sure the file exists and {file_path} specified is correct.                                 |
 | Error: Failed to open file. EACCES: permission denied, open {file_path}         | There is a file access permission issue. Please make sure the SDK has read permission of the {file_path} specified in `scanFile`.                               |
-| Error: Invalid region: {region}                                                 | The region is invalid. Please make sure a correct region is used.                               |
+| Error: Invalid region: {region}                                                 | The region is invalid. Please make sure a correct region is used.                                                                                               |

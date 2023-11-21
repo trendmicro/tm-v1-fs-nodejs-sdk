@@ -1,7 +1,7 @@
 {
-  "name": "cloudone-antimalware-cli-client-examples",
+  "name": "file-security-cli-client-examples",
   "version": "1.0.0",
-  "description": "Cloud One Antimalware API library examples for CLI client in JavaScript",
+  "description": "Vision One File Security API library examples for CLI client in TypeScript",
   "license": "MIT",
   "author": "Trend Micro Inc",
   "main": "index.js",
