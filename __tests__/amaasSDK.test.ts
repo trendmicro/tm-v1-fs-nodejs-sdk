@@ -167,7 +167,7 @@ describe('AmaasGrpcClient class constructor testing', () => {
   })
 
   it('should initiate class successfully with region', () => {
-    const amaasGrpcClient = new AmaasGrpcClient("us-1", authKey)
+    const amaasGrpcClient = new AmaasGrpcClient("us-east-1", authKey)
     expect(amaasGrpcClient).toBeDefined()
     amaasGrpcClient.close()
   })
@@ -295,7 +295,7 @@ describe('error testing', () => {
   })
   it('should return an error if invalid region', () => {
     const region = 'us1'
-    const error = new Error(`Invalid region: ${region}, region value should be one of au-1,ca-1,de-1,gb-1,in-1,jp-1,sg-1,us-1,ap-southeast-2,eu-central-1,ap-south-1,ap-northeast-1,ap-southeast-1,us-east-1`)
+    const error = new Error(`Invalid region: ${region}, region value should be one of ap-southeast-2,eu-central-1,ap-northeast-1,ap-southeast-1,us-east-1`)
     expect(() => {
       const amaasScanClient = new AmaasGrpcClient(region, authKey)
       expect(amaasScanClient).toBeUndefined()
