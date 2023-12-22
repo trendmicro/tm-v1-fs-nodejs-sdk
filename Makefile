@@ -15,7 +15,6 @@ endif
 all: clean build
 
 build:
-	cp ./protos/scan.proto scan.proto
 	$(SED) 's/__PACKAGE_VERSION__/$(VERSION)/' ./package.json
 	docker build \
 		-t $(IMAGE_NAME) \
@@ -25,7 +24,6 @@ build:
 		.
 	$(SED) 's/$(VERSION)/__PACKAGE_VERSION__/' ./package.json
 test:
-	cp ./protos/scan.proto scan.proto
 	docker build \
 		--target unit_test \
 		-t $(IMAGE_NAME) \
@@ -35,7 +33,6 @@ test:
 
 clean:
 	-@docker rmi -f $(IMAGE_NAME) || true
-	rm -f scan.proto
 	rm -rf output
 	rm -rf coverage
 

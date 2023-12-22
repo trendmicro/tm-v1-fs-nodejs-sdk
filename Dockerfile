@@ -12,24 +12,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 USER su-amaas
 
 ## Copy source codes and documents
-COPY --chown=su-amaas:su-amaas package.json scan.proto tsconfig.json LICENSE .eslintrc.json README.md /home/su-amaas/
+COPY --chown=su-amaas:su-amaas package.json package-lock.json tsconfig.json LICENSE .eslintrc.json README.md /home/su-amaas/
+COPY --chown=su-amaas:su-amaas protos /home/su-amaas/protos
 COPY --chown=su-amaas:su-amaas src /home/su-amaas/src
 
 WORKDIR /home/su-amaas
 
-RUN npm install
+RUN npm ci
 
 ## Generate protobuf files
 RUN npx grpc_tools_node_protoc \
     --js_out=import_style=commonjs,binary:./src/lib \
     --grpc_out=grpc_js:./src/lib \
     --plugin=protoc-gen-grpc=./node_modules/.bin/grpc_tools_node_protoc_plugin \
-    ./scan.proto
+    ./protos/scan.proto
 
 RUN protoc \
     --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
     --ts_out=grpc_js:./src/lib \
-    ./scan.proto
+    ./protos/scan.proto
 
 RUN mkdir -p ./output
 
