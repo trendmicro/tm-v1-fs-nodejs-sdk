@@ -15,17 +15,23 @@ endif
 all: clean build
 
 build:
-	cp ./protos/scan.proto scan.proto
-	$(SED) 's/__PACKAGE_VERSION__/$(VERSION)/' ./package.json
+	docker build \
+		-t $(IMAGE_NAME) \
+		--build-arg PACK_CMD=pack \
+		--build-arg TM_AM_LOG_LEVEL=$(TM_AM_LOG_LEVEL) \
+		.
+	mkdir -p output
+	docker run --rm $(IMAGE_NAME) tar -cz file-security-sdk-$(VERSION).tgz | tar xzf - -C output
+
+publish:
 	docker build \
 		-t $(IMAGE_NAME) \
 		--build-arg NPM_TOKEN=$(NODE_AUTH_TOKEN) \
 		--build-arg PACK_CMD=publish \
 		--build-arg TM_AM_LOG_LEVEL=$(TM_AM_LOG_LEVEL) \
 		.
-	$(SED) 's/$(VERSION)/__PACKAGE_VERSION__/' ./package.json
+
 test:
-	cp ./protos/scan.proto scan.proto
 	docker build \
 		--target unit_test \
 		-t $(IMAGE_NAME) \
@@ -35,8 +41,7 @@ test:
 
 clean:
 	-@docker rmi -f $(IMAGE_NAME) || true
-	rm -f scan.proto
 	rm -rf output
 	rm -rf coverage
 
-.PHONY: all build test clean
+.PHONY: all build publish test clean

@@ -1,7 +1,7 @@
 import { statSync } from 'fs'
 import { status, credentials, Metadata, ServiceError } from '@grpc/grpc-js'
 
-import { ScanClient } from './scan_grpc_pb'
+import { ScanClient } from './protos/scan_grpc_pb'
 import { ScanRun } from './scanRun'
 import { AmaasScanResultObject } from './amaasScanResultObject'
 import { AmaasCredentials } from './amaasCredentials'

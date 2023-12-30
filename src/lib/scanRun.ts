@@ -1,8 +1,8 @@
 import { basename } from 'path'
 import { openSync, readSync, closeSync } from 'fs'
 
-import * as scanPb from './scan_pb'
-import { ScanClient } from './scan_grpc_pb'
+import * as scanPb from './protos/scan_pb'
+import { ScanClient } from './protos/scan_grpc_pb'
 import { AmaasScanResultObject } from './amaasScanResultObject'
 import { Logger } from './logger'
 import { ClientDuplexStream, Deadline } from '@grpc/grpc-js'
