@@ -13,7 +13,7 @@ import { AmaasGrpcClient } from '../src/lib/amaasGrpcClient'
 import { AmaasScanResultObject } from '../src/lib/amaasScanResultObject'
 import { AmaasCredentials } from '../src/lib/amaasCredentials'
 import { Logger, LogLevel } from '../src/lib/logger'
-import * as scanPb from '../src/lib/scan_pb'
+import * as scanPb from '../src/lib/protos/scan_pb'
 import { isJWT, validateTags, getHashes, getBufferHashes } from '../src/lib/utils'
 import { readFile } from './utils/fileUtils'
 import { generateJwtToken } from './utils/jwtTokens'
@@ -28,7 +28,7 @@ const protoLoaderOptions = {
   defaults: true,
   oneofs: true
 }
-const scanProtoFile = path.resolve('./', 'scan.proto')
+const scanProtoFile = path.resolve('./protos/', 'scan.proto')
 const packageDefinition = loadSync(
   scanProtoFile,
   protoLoaderOptions
@@ -113,7 +113,7 @@ const credent: AmaasCredentials = {
   credentType: 'apikey',
   secret: authKey
 }
-const filesToScan = ['package-lock.json', 'jest.config.ts', 'scan.proto']
+const filesToScan = ['package-lock.json', 'jest.config.ts', './protos/scan.proto']
 
 // Disable NodeJS gRPC DNS resolution when localhost is used to fix process doesn't exit immediately issue
 const server = new Server({ 'grpc.service_config_disable_resolution': 1 })
@@ -305,10 +305,9 @@ describe('error testing', () => {
   it('should return an error when incorrect TLS protocol is used', async () => {
     const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey)
     expect(amaasGrpcClient).toBeDefined()
-    const error = new Error('Service is not reachable. No connection established')
     await expect(async () => {
       await amaasGrpcClient.scanFile(filesToScan[0])
-    }).rejects.toEqual(error)
+    }).rejects.toThrow('Service is not reachable. No connection established')
     amaasGrpcClient.close()
   })
 
@@ -391,13 +390,13 @@ describe('Utils testing', () => {
     }).toThrowError(error)
   })
   it('getHashes should return sha256 and sha1 correctly', async () => {
-    await expect(getHashes(filesToScan[0], ['sha256', 'sha1'], 'hex'))
-      .resolves.toEqual(['aee0f54d87f888dce437f56f7da52dc7c35081ae27218facd2ecd1d10e5552d6', '89e5eee8a309074bf3a71001a011adfaffadb4b3'])
+    await expect(getHashes('__tests__/sha_test_file.txt', ['sha256', 'sha1'], 'hex'))
+      .resolves.toEqual(['d2393511488886a425b8e514b25a2264aaa4aa4ac81ada9c4a8a47975747a955', 'c6afdcdc2841076fb94dd2f1985c595ad0fda864'])
   })
   it('getBufferHashes should return sha256 and sha1 correctly', async () => {
-    const buff = readFile(filesToScan[0], statSync(filesToScan[0]).size)
+    const buff = readFile('__tests__/sha_test_file.txt', statSync('__tests__/sha_test_file.txt').size)
     await expect(getBufferHashes(buff, ['sha256', 'sha1'], 'hex'))
-      .resolves.toEqual(['aee0f54d87f888dce437f56f7da52dc7c35081ae27218facd2ecd1d10e5552d6', '89e5eee8a309074bf3a71001a011adfaffadb4b3'])
+      .resolves.toEqual(['d2393511488886a425b8e514b25a2264aaa4aa4ac81ada9c4a8a47975747a955', 'c6afdcdc2841076fb94dd2f1985c595ad0fda864'])
   })
   it('validateTags should return true if each tag size does not exceed maxTagLength', async () => {
     const tags = ['tag1', 'tag2', 'tag3']

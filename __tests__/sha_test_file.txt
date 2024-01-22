@@ -1,0 +1,1 @@
+This is a dummy file for SHA-1 and SHA-256 unit test.

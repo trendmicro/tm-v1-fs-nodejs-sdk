@@ -18,7 +18,9 @@ The following instructions assumes you are at the `<top level>/client/ts/example
    ```sh
    cd cli/
    ```
+
    or
+
    ```sh
    cd cli-esm/
    ```
@@ -75,6 +77,7 @@ The following instructions assumes you are at the `<top level>/client/ts/example
    ```
 
    - batchBufferScan
+
    ```sh
    SOURCE=batchBufferScan.ts npm run build # cli
    ```
@@ -98,7 +101,7 @@ The following instructions assumes you are at the `<top level>/client/ts/example
 - Handler: index.handler
 - Architecture: x86_64 or arm64
 
-2. Set up environment variables for your function by clicking on "Configuration" and then "Environment variables". Add the following keys and values. Replace `__YOUR_VISION_ONE_API_KEY_REGION__` and `__YOUR_VISION_ONE_API_KEY__` with your own API key region and Vision One API key.
+1. Set up environment variables for your function by clicking on "Configuration" and then "Environment variables". Add the following keys and values. Replace `__YOUR_VISION_ONE_API_KEY_REGION__` and `__YOUR_VISION_ONE_API_KEY__` with your own API key region and Vision One API key.
 
    |Key|Value|Default value|
    |---|---|---|
@@ -106,29 +109,30 @@ The following instructions assumes you are at the `<top level>/client/ts/example
    |TM_AM_AUTH_KEY|`__YOUR_VISION_ONE_API_KEY__`|
    |TM_AM_LOG_LEVEL|FATAL \| ERROR \| WARN \| INFO \| DEBUG| OFF |
 
-3. Navigate to 'lambda/' or 'lambda-esm/'.
+1. Navigate to 'lambda/' or 'lambda-esm/'.
 
    ```sh
    cd lambda/
    ```
+
    or
 
    ```sh
    cd lambda-esm/
    ```
 
-4. Install dependencies. This will install the SDK and all required devDependencies.
+1. Install dependencies. This will install the SDK and all required devDependencies.
 
    ```sh
    npm install
    ```
 
-5. You should have the a 7-Zip executable (v16.02 or greater) available in your system.
+1. You should have the a 7-Zip executable (v16.02 or greater) available in your system.
 
     - On Debian and Ubuntu install the p7zip-full package or use 7-Zip 21.02 alpha or higher
     - On Mac OSX use Homebrew brew install p7zip
     - On Windows get 7-Zip from 7-Zip download page.
-6. Build the example by running one of the following commands:
+1. Build the example by running one of the following commands:
 
    - fileScan:
 
@@ -182,6 +186,6 @@ The following instructions assumes you are at the `<top level>/client/ts/example
 
    An archive file `index.zip` which contains index.js and node_modules will be generated under the 'dist/' directory.
 
-7. Deploy `dist/index.zip` to your Lambda function created in step 1 by clicking on "Function code" and then "Upload from" and selecting the index.zip file.
+1. Deploy `dist/index.zip` to your Lambda function created in step 1 by clicking on "Function code" and then "Upload from" and selecting the index.zip file.
 
-8. Create a test for your function by clicking on "Configure test events" and then "Create new test event". Choose "Hello World" as the template and click "Create". Click "Test" to run the test.
+1. Create a test for your function by clicking on "Configure test events" and then "Create new test event". Choose "Hello World" as the template and click "Create". Click "Test" to run the test.
