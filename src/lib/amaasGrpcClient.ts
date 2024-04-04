@@ -153,7 +153,7 @@ export class AmaasGrpcClient {
    * @param name - Filename
    * @param tags - Tags to be added to the scan request
    */
-  public async scanFile (name: string, tags?: string[]): Promise<AmaasScanResultObject> {
+  public async scanFile (name: string, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject> {
     let size: number
 
     try {
@@ -165,7 +165,7 @@ export class AmaasGrpcClient {
 
     const scanRun = this.initScanRun(tags)
     return await scanRun
-      .scanFile(name, size)
+      .scanFile(name, size, pml, feedback)
       .then(result => result)
       .catch(err => {
         throw this.processError(err)
@@ -179,10 +179,10 @@ export class AmaasGrpcClient {
    * @param buff - Buffer to scan
    * @param tags - Tags to be added to the scan request
    */
-  public async scanBuffer (fileName: string, buff: Buffer, tags?: string[]): Promise<AmaasScanResultObject> {
+  public async scanBuffer (fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject> {
     const scanRun = this.initScanRun(tags)
     return await scanRun
-      .scanBuffer(fileName, buff)
+      .scanBuffer(fileName, buff, pml, feedback)
       .then(result => result)
       .catch(err => {
         throw this.processError(err)
