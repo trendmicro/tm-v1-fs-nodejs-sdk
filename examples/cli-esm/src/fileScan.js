@@ -20,9 +20,12 @@ const useKey = false
  * @async
  * @function runFileScan
  * @param {string} fileName
+ * @param {string[]} tags
+ * @param {boolean} pml
+ * @param {boolean} smart_feedback
  * @returns {Promise<void>}
  */
-const runFileScan = async (fileName) => {
+const runFileScan = async (fileName, tags, pml, smart_feedback) => {
   console.log(`\nScanning '${fileName}'`)
   const amaasGrpcClient = useKey
     ? new AmaasGrpcClient(amaasHostName, key)
@@ -31,7 +34,7 @@ const runFileScan = async (fileName) => {
   loggerConfig(amaasGrpcClient)
 
   await amaasGrpcClient
-    .scanFile(fileName)
+    .scanFile(fileName, tags, pml, smart_feedback)
     .then(result => {
       console.log(`${JSON.stringify(result)}`)
     })
@@ -44,6 +47,9 @@ const runFileScan = async (fileName) => {
 }
 
 void (async () => {
-  // Examples of using AmaasGrpcClient
-  await runFileScan('node_modules/@grpc/grpc-js/src/admin.ts')
+  // Examples of using AmaasGrpcClient with tags and TrendX with smart feedback
+  const tags = ['example', 'test']
+  const predictive_machine_learning = true
+  const smart_feedback = true
+  await runFileScan('node_modules/@grpc/grpc-js/src/admin.ts', tags, predictive_machine_learning, smart_feedback)
 })()

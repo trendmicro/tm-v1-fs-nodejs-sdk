@@ -17,6 +17,7 @@ export class ScanRun {
   private readonly logger: Logger
   private finalResult: AmaasScanResultObject
   private readonly tags: string[]
+  private readonly bulk: boolean
 
   constructor (scanClient: ScanClient, timeout: number, logger: Logger, tags?: string[]) {
     this.scanClient = scanClient
@@ -24,9 +25,10 @@ export class ScanRun {
     this.logger = logger
     this.finalResult = Object.create(null) as AmaasScanResultObject
     this.tags = tags ?? []
+    this.bulk = true
   }
 
-  private async streamRun (fileName: string, fileSize: number, hashes: string[], buff?: Buffer): Promise<AmaasScanResultObject> {
+  private async streamRun (fileName: string, fileSize: number, hashes: string[], pml: boolean, feedback: boolean, buff?: Buffer): Promise<AmaasScanResultObject> {
     return await new Promise<AmaasScanResultObject>((resolve, reject) => {
       const _deadline: Deadline = new Date().getTime() + this.deadline * 1000
       const stream = this.scanClient.run({ deadline: _deadline })
@@ -52,10 +54,13 @@ export class ScanRun {
       if (this.tags) {
         initRequest.setTagsList(this.tags)
       }
+      initRequest.setTrendx(pml)
+      initRequest.setSpnFeedback(feedback)
       this.logger.debug(`sha1: ${hashes[1]}`)
       this.logger.debug(`sha256: ${hashes[0]}`)
       initRequest.setFileSha1(`${sha1Prefix}${hashes[1]}`)
       initRequest.setFileSha256(`${sha256Prefix}${hashes[0]}`)
+      initRequest.setBulk(this.bulk)
       stream.write(initRequest)
     })
   }
@@ -64,25 +69,52 @@ export class ScanRun {
     response: scanPb.S2C,
     fileName: string,
     stream: ClientDuplexStream<scanPb.C2S, scanPb.S2C>,
-    buff: Buffer | undefined
+    buff?: Buffer
   ): void {
     const cmd = response.getCmd()
-    const length: number = response.getLength()
-    const offset: number = response.getOffset()
+    const stage = response.getStage()
 
-    if (cmd === scanPb.Command.CMD_RETR && length > 0) {
-      this.logger.debug(`stage RUN, try to read ${length} at offset ${offset}`)
-      const chunk = buff !== undefined ? buff.subarray(offset, offset + length) : Buffer.alloc(length)
-      if (buff === undefined) {
-        const fd = openSync(fileName, 'r')
-        readSync(fd, chunk, 0, length, offset)
+    if (cmd === scanPb.Command.CMD_RETR) {
+      let bulkLength: number[] = []
+      let bulkOffset: number[] = []
+
+      if (stage !== scanPb.Stage.STAGE_RUN) {
+        throw new Error(`Received unexpected command ${cmd} and stage ${stage}.`)
+      }
+
+      if (this.bulk) {
+        this.logger.debug("enter bulk mode")
+        const bulkCount = response.getBulkOffsetList().length
+        if (bulkCount > 1) {
+          this.logger.debug("bulk transfer triggered")
+        }
+        bulkLength = response.getBulkLengthList()
+        bulkOffset = response.getBulkOffsetList()
+      } else {
+        bulkLength = [response.getLength()]
+        bulkOffset = [response.getOffset()]
+      }
+
+      const fd = buff !== undefined ? undefined : openSync(fileName, 'r')
+
+      for (let i = 0; i < bulkLength.length; i++) {
+        this.logger.debug(`stage RUN, try to read ${bulkLength[i]} at offset ${bulkOffset[i]}`)
+        const chunk = buff !== undefined ? buff.subarray(bulkOffset[i], bulkOffset[i] + bulkLength[i]) : Buffer.alloc(bulkLength[i])
+
+        if (fd !== undefined) {
+          readSync(fd, chunk, 0, bulkLength[i], bulkOffset[i])
+        }
+
+        const request = new scanPb.C2S()
+        request.setStage(scanPb.Stage.STAGE_RUN)
+        request.setOffset(bulkOffset[i])
+        request.setChunk(chunk)
+        stream.write(request)
+      }
+
+      if (fd !== undefined) {
         closeSync(fd)
       }
-      const request = new scanPb.C2S()
-      request.setStage(scanPb.Stage.STAGE_RUN)
-      request.setOffset(response.getOffset())
-      request.setChunk(chunk)
-      stream.write(request)
     } else if (cmd === scanPb.Command.CMD_QUIT) {
       this.logger.debug('receive QUIT, exit loop...\n')
       const result = response.getResult()
@@ -97,10 +129,12 @@ export class ScanRun {
 
   public async scanFile (
     name: string,
-    size: number
+    size: number,
+    pml: boolean,
+    feedback: boolean
   ): Promise<AmaasScanResultObject> {
     const hashes = await getHashes(name, ['sha256', 'sha1'], 'hex')
-    return await this.streamRun(name, size, hashes)
+    return await this.streamRun(name, size, hashes, pml, feedback)
       .then(result => {
         return result
       })
@@ -109,11 +143,13 @@ export class ScanRun {
 
   public async scanBuffer (
     name: string,
-    buff: Buffer
+    buff: Buffer,
+    pml: boolean,
+    feedback: boolean
   ): Promise<AmaasScanResultObject> {
     const size = Buffer.byteLength(buff)
     const hashes = await getBufferHashes(buff, ['sha256', 'sha1'], 'hex')
-    return await this.streamRun(name, size, hashes, buff)
+    return await this.streamRun(name, size, hashes, pml, feedback, buff)
       .then(result => result)
       .catch(err => { throw err })
   }

@@ -65,7 +65,7 @@ Create a new instance of the `AmaasGrpcClient` class.
 **_Return_**
 An AmaasGrpcClient instance
 
-#### `scanFile(name: string, tags?: string[]): Promise<AmaasScanResultObject>`
+#### `scanFile(name: string, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject>`
 
 Scan a file for malware and retrieves response data from the API.
 
@@ -75,11 +75,13 @@ Scan a file for malware and retrieves response data from the API.
 | --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- |
 | name      | The name of the file with path of directory containing the file to scan.                                                 |               |
 | tags      | `(Optional)` The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
+| pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
+| feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
 
 **_Return_**
 A Promise that resolves to the API response data.
 
-#### `scanBuffer(fileName: string, buff: Buffer, tags?: string[]): Promise<AmaasScanResultObject>`
+#### `scanBuffer(fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject>`
 
 Scan a buffer for malware and retrieves response data from the API.
 
@@ -87,9 +89,11 @@ Scan a buffer for malware and retrieves response data from the API.
 
 | Parameter | Description                                                                                                              | Default value |
 | --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- |
-| fileName  | The name of the file or object the buffer is created from. The name is used to identify the buffer.                      |               |
+| fileName  | The name of the file or object the buffer is created from. The name is used to identify the buffer.                      | |
 | buff      | The buffer to scan.                                                                                                      |               |
 | tags      | `(Optional)` The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
+| pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
+| feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -202,10 +206,14 @@ try {
 
   // Example of scanBuffer
   const buff = await readFileSync(fileToScan);
+  const pml = true
+  const feedback = true
   const bufferScanResult = await scanClient.scanBuffer(
     "THE_FILE_NAME_OR_IDENTIFIER",
     buff,
-    ["tag1", "tag2", "tag3"]
+    ["tag1", "tag2", "tag3"],
+    pml,
+    feedback
   );
   console.log(
     `Number of malware found in buffer: ${bufferScanResult.scanResult}`

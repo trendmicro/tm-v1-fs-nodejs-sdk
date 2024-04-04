@@ -38,6 +38,10 @@ const grpcClient = (scanGrpcObj.amaas as any).scan.v1.Scan
 const grpcServiceAttrs = grpcClient.service
 const serverInsecureCredent = ServerCredentials.createInsecure()
 
+const getRandomNumber = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
 // Services implementation
 const runImpl = (call: any): void => {
   // Random generated maximum number of runs in between 2 and 5
@@ -56,7 +60,7 @@ const runImpl = (call: any): void => {
       foundMalwares: []
     })
   }
-  call.on('data', (request: { stage: string; rs_size: number; tags?: string[] }) => {
+  call.on('data', (request: { stage: string; rs_size: number; tags?: string[]; }) => {
     const stage: string = request.stage
     if (stage === 'STAGE_INIT') {
       if (request.tags) {
@@ -77,9 +81,9 @@ const runImpl = (call: any): void => {
         call.write(cmdQuitS2CMessage)
         call.end()
       } else {
-        // Random generated length in between 1 and rs_size
-        const length = Math.ceil(Math.random() * rsSize)
-        call.write({ cmd: scanPb.Command.CMD_RETR, stage: scanPb.Stage.STAGE_RUN, length })
+        const start = getRandomNumber(0, rsSize - 1)
+        const end = getRandomNumber(start, rsSize - 1)
+        call.write({ cmd: scanPb.Command.CMD_RETR, stage: scanPb.Stage.STAGE_RUN, bulk_offset: [start], bulk_length: [end - start], length: end - start })
       }
     } else if (stage === 'STAGE_RUN') {
       // Send CMD_QUIT if maximum number of runs is reached
@@ -88,8 +92,9 @@ const runImpl = (call: any): void => {
         call.end()
       } else {
         counts += 1
-        const length = Math.ceil(Math.random() * rsSize)
-        call.write({ cmd: scanPb.Command.CMD_RETR, stage: scanPb.Stage.STAGE_RUN, length })
+        const start = getRandomNumber(0, rsSize - 1)
+        const end = getRandomNumber(start, rsSize - 1)
+        call.write({ cmd: scanPb.Command.CMD_RETR, stage: scanPb.Stage.STAGE_RUN, bulk_offset: [start], bulk_length: [end - start], length: end - start })
       }
     } else {
       // other stages
@@ -215,10 +220,24 @@ describe('AmaasGrpcClient scanFile function testing', () => {
     amaasGrpcClient.close()
   })
 
-  it('should scan file with tags successfully', async () => {
+  it('should scan file with tags successfully without TrendX and feedback', async () => {
     const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
     const tags = ['tag1', 'tag2', 'tag3']
-    await amaasGrpcClient.scanFile(filesToScan[0], tags)
+    const pml = false
+    const feedback = false
+    await amaasGrpcClient.scanFile(filesToScan[0], tags, pml, feedback)
+      .then(result => {
+        expect(result.scanResult).not.toEqual(-1)
+      })
+    amaasGrpcClient.close()
+  })
+
+  it('should scan file with tags successfully with TrendX and feedback', async () => {
+    const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
+    const tags = ['tag1', 'tag2', 'tag3']
+    const pml = true
+    const feedback = true
+    await amaasGrpcClient.scanFile(filesToScan[0], tags, pml, feedback)
       .then(result => {
         expect(result.scanResult).not.toEqual(-1)
       })
@@ -282,6 +301,19 @@ describe('AmaasGrpcClient scanBuffer function testing', () => {
       })
     amaasGrpcClient.close()
   })
+
+  it('should scan buffer with tags successfully with TrendX and feedback', async () => {
+    const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
+    const buff = readFileSync(filesToScan[0])
+    const tags = ['tag1', 'tag2', 'tag3']
+    const pml = true
+    const feedback = true
+    await amaasGrpcClient.scanBuffer(filesToScan[0], buff, tags, pml, feedback)
+      .then(result => {
+        expect(result.scanResult).not.toEqual(-1)
+      })
+    amaasGrpcClient.close()
+  })
 })
 
 describe('error testing', () => {
@@ -295,7 +327,7 @@ describe('error testing', () => {
   })
   it('should return an error if invalid region', () => {
     const region = 'us1'
-    const error = new Error(`Invalid region: ${region}, region value should be one of ap-southeast-2,eu-central-1,ap-northeast-1,ap-southeast-1,us-east-1`)
+    const error = new Error(`Invalid region: ${region}, region value should be one of ap-southeast-2,eu-central-1,ap-northeast-1,ap-southeast-1,us-east-1,ap-south-1`)
     expect(() => {
       const amaasScanClient = new AmaasGrpcClient(region, authKey)
       expect(amaasScanClient).toBeUndefined()
