@@ -25,7 +25,7 @@ export class ScanRun {
     this.logger = logger
     this.finalResult = Object.create(null) as AmaasScanResultObject
     this.tags = tags ?? []
-    this.bulk = true
+    this.bulk = false
   }
 
   private async streamRun (fileName: string, fileSize: number, hashes: string[], pml: boolean, feedback: boolean, buff?: Buffer): Promise<AmaasScanResultObject> {

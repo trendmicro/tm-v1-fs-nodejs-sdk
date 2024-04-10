@@ -111,7 +111,7 @@ const scanImpls = {
 
 // Mock server does not use TLS protocol. Set enableTLS to false.
 const enableTLS = false
-const grpcConnectionTimeout = 3 * 60 // seconds
+const grpcConnectionTimeout = 5 * 60 // seconds
 const amaasHostName = 'localhost:50051'
 const authKey = ''
 const credent: AmaasCredentials = {
