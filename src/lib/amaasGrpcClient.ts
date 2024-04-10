@@ -32,7 +32,7 @@ export class AmaasGrpcClient {
   constructor (
     amaasHostName: string,
     credent: AmaasCredentials | string,
-    timeout = 180,
+    timeout = 300,
     enableTLS = true,
     appName = 'V1FS'
   ) {
