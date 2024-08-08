@@ -1,13 +1,22 @@
 export interface AmaasScanResultObject {
-  scanTimestamp: string
-  version: string
-  fileName: string
-  scanId: string
+  schemaVersion: string
+  scannerVersion: string
   scanResult: number
-  foundMalwares: [
+  scanId: string
+  scanTimestamp: string
+  fileName: string
+  foundMalwares?: [
     {
       fileName: string
       malwareName: string
     }
   ]
+  foundErrors?: [
+    {
+      name: string
+      description: string
+    }
+  ]
+  fileSHA1: string
+  fileSHA256: string
 }

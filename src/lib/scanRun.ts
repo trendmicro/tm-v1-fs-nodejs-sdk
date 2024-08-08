@@ -4,6 +4,7 @@ import { openSync, readSync, closeSync } from 'fs'
 import * as scanPb from './protos/scan_pb'
 import { ScanClient } from './protos/scan_grpc_pb'
 import { AmaasScanResultObject } from './amaasScanResultObject'
+import { AmaasScanResultVerbose } from './amaasScanResultVerbose'
 import { Logger } from './logger'
 import { ClientDuplexStream, Deadline } from '@grpc/grpc-js'
 import { getBufferHashes, getHashes } from './utils'
@@ -15,7 +16,7 @@ export class ScanRun {
   private readonly scanClient: ScanClient
   private readonly deadline: number
   private readonly logger: Logger
-  private finalResult: AmaasScanResultObject
+  private finalResult: object
   private readonly tags: string[]
   private readonly bulk: boolean
 
@@ -23,17 +24,17 @@ export class ScanRun {
     this.scanClient = scanClient
     this.deadline = timeout
     this.logger = logger
-    this.finalResult = Object.create(null) as AmaasScanResultObject
+    this.finalResult = Object.create(null)
     this.tags = tags ?? []
     this.bulk = false
   }
 
-  private async streamRun (fileName: string, fileSize: number, hashes: string[], pml: boolean, feedback: boolean, buff?: Buffer): Promise<AmaasScanResultObject> {
-    return await new Promise<AmaasScanResultObject>((resolve, reject) => {
+  private async streamRun (fileName: string, fileSize: number, hashes: string[], pml: boolean, feedback: boolean, verbose: boolean, buff?: Buffer): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
+    return await new Promise<AmaasScanResultObject | AmaasScanResultVerbose>((resolve, reject) => {
       const _deadline: Deadline = new Date().getTime() + this.deadline * 1000
       const stream = this.scanClient.run({ deadline: _deadline })
       stream.on('data', (response: scanPb.S2C) => {
-        this.handleStreamData(response, fileName, stream, buff)
+        this.handleStreamData(response, fileName, verbose, stream, buff)
       })
       stream.on('error', (err: Error) => {
         const error = ['Metadata key ""'].includes(String(err))
@@ -42,7 +43,7 @@ export class ScanRun {
         reject(error)
       })
       stream.on('end', () => {
-        resolve(this.finalResult)
+        resolve((verbose) ? this.finalResult as AmaasScanResultVerbose : this.finalResult as AmaasScanResultObject)
       })
 
       // INIT stage
@@ -56,6 +57,7 @@ export class ScanRun {
       }
       initRequest.setTrendx(pml)
       initRequest.setSpnFeedback(feedback)
+      initRequest.setVerbose(verbose)
       this.logger.debug(`sha1: ${hashes[1]}`)
       this.logger.debug(`sha256: ${hashes[0]}`)
       initRequest.setFileSha1(`${sha1Prefix}${hashes[1]}`)
@@ -68,6 +70,7 @@ export class ScanRun {
   private handleStreamData (
     response: scanPb.S2C,
     fileName: string,
+    verbose: boolean,
     stream: ClientDuplexStream<scanPb.C2S, scanPb.S2C>,
     buff?: Buffer
   ): void {
@@ -131,10 +134,11 @@ export class ScanRun {
     name: string,
     size: number,
     pml: boolean,
-    feedback: boolean
-  ): Promise<AmaasScanResultObject> {
+    feedback: boolean,
+    verbose: boolean
+  ): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     const hashes = await getHashes(name, ['sha256', 'sha1'], 'hex')
-    return await this.streamRun(name, size, hashes, pml, feedback)
+    return await this.streamRun(name, size, hashes, pml, feedback, verbose)
       .then(result => {
         return result
       })
@@ -145,11 +149,12 @@ export class ScanRun {
     name: string,
     buff: Buffer,
     pml: boolean,
-    feedback: boolean
-  ): Promise<AmaasScanResultObject> {
+    feedback: boolean,
+    verbose: boolean
+  ): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     const size = Buffer.byteLength(buff)
     const hashes = await getBufferHashes(buff, ['sha256', 'sha1'], 'hex')
-    return await this.streamRun(name, size, hashes, pml, feedback, buff)
+    return await this.streamRun(name, size, hashes, pml, feedback, verbose, buff)
       .then(result => result)
       .catch(err => { throw err })
   }
