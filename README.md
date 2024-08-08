@@ -158,7 +158,7 @@ Create a new instance of the `AmaasGrpcClient` class.
 **_Return_**
 An AmaasGrpcClient instance
 
-#### `scanFile(name: string, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject>`
+#### `scanFile(name: string, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject | AmaasScanResultVerbose>`
 
 Scan a file for malware and retrieves response data from the API.
 
@@ -170,11 +170,12 @@ Scan a file for malware and retrieves response data from the API.
 | tags      | The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
 | pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
 | feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
+| verbose  | This flag is to enable verbose format for returning scan result.                                             | false         |
 
 **_Return_**
 A Promise that resolves to the API response data.
 
-#### `scanBuffer(fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject>`
+#### `scanBuffer(fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject | AmaasScanResultVerbose>`
 
 Scan a buffer for malware and retrieves response data from the API.
 
@@ -187,6 +188,7 @@ Scan a buffer for malware and retrieves response data from the API.
 | tags      | The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
 | pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
 | feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
+| verbose  | This flag is to enable verbose format for returning scan result.                                            | false         |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -231,16 +233,18 @@ void
 
 ### `AmaasScanResultObject`
 
-The AmaasScanResultObject interface defines the structure of the response data that is retrieved from our API.
+The AmaasScanResultObject interface defines the structure of the response data that is retrieved from our API in regular format (i.e. verbose flag is off).
 The following are the fields in the interface.
 
 ```typescript
 interface AmaasScanResultObject {
+  scannerVersion: string; // Scanner version
+  schemaVersion: string; // Scan result schema version
+  scanResult: number; // Number of malwares found. A value of 0 means no malware was found
   scanTimestamp: string; // Timestamp of the scan in ISO 8601 format
-  version: string; // Scan result schema version
   fileName: string; // Name of the file scanned
   scanId: string; // ID of the scan
-  scanResult: number; // Number of malwares found. A value of 0 means no malware was found
+  
   foundMalwares: [
     // A list of malware names and the filenames found by AMaaS
     {
@@ -248,8 +252,109 @@ interface AmaasScanResultObject {
       malwareName: string; // Malware name
     }
   ];
+  foundErrors?: [
+    name: string; // Name of the error
+    description: string // Description of the error
+  ]
+  "fileSHA1": string;
+  "fileSHA256": string
 }
 ```
+
+### `AmaasScanResultVerbose`
+
+The AmaasScanResultVerbose interface defines the structure of the response data that is retrieved from our API in verbose format.
+The following are the fields in the interface.
+
+```typescript
+
+interface AmaasScanResultVerbose {
+  scanType: string
+  objectType: string
+  timestamp: {
+    start: string
+    end: string
+  }
+  schemaVersion: string
+  scannerVersion: string
+  fileName: string
+  rsSize: number
+  scanId: string
+  accountId: string
+  result: {
+    atse: {
+      elapsedTime: number
+      fileType: number
+      fileSubType: number
+      version: {
+        engine: string
+        lptvpn: number
+        ssaptn: number
+        tmblack: number
+        tmwhite: number
+        macvpn: number
+      }
+      malwareCount: number
+      malware: Array<
+        {
+          name: string
+          fileName: string
+          type: string
+          fileType: number
+          fileTypeName: string
+          fileSubType: number
+          fileSubTypeName: string
+        }
+      > | null
+      error: Array<
+        {
+          code: number
+          message: string
+        }
+      > | null
+      fileTypeName: string
+      fileSubTypeName: string
+    }
+    trendx?: {
+      elapsedTime: number
+      fileType: number
+      fileSubType: number
+      version: {
+        engine: string
+        tmblack: number
+        tmwhite: number
+        trendx: number
+      }
+      malwareCount: number
+      malware: Array<
+        {
+          name: string
+          fileName: string
+          type: string
+          fileType: number
+          fileTypeName: string
+          fileSubType: number
+          fileSubTypeName: string
+        }
+      > | null
+      error: Array<
+        {
+          code: number
+          message: string
+        }
+      > | null
+      fileTypeName: string
+      fileSubTypeName: string
+    }
+  }
+  tags?: [ string ]
+  fileSHA1: string
+  fileSHA256: string
+  appName: string
+}
+
+```
+
 
 ### `LogLevel`
 

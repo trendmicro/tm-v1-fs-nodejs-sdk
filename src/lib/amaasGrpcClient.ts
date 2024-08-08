@@ -4,6 +4,7 @@ import { status, credentials, Metadata, ServiceError } from '@grpc/grpc-js'
 import { ScanClient } from './protos/scan_grpc_pb'
 import { ScanRun } from './scanRun'
 import { AmaasScanResultObject } from './amaasScanResultObject'
+import { AmaasScanResultVerbose } from './amaasScanResultVerbose'
 import { AmaasCredentials } from './amaasCredentials'
 import { CallMetadataGenerator } from '@grpc/grpc-js/build/src/call-credentials'
 import {getFQDN, validateTags } from './utils'
@@ -152,8 +153,11 @@ export class AmaasGrpcClient {
    *
    * @param name - Filename
    * @param tags - Tags to be added to the scan request
+   * @param pml - Flag to enable predictive machine learning detection.
+   * @param feedback - Flag to use Trend Micro Smart Protection Network's Smart Feedback.
+   * @param verbose - Flag to enable verbose mode in returning scan result
    */
-  public async scanFile (name: string, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject> {
+  public async scanFile (name: string, tags?: string[], pml: boolean = false, feedback: boolean = false, verbose: boolean = false): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     let size: number
 
     try {
@@ -165,7 +169,7 @@ export class AmaasGrpcClient {
 
     const scanRun = this.initScanRun(tags)
     return await scanRun
-      .scanFile(name, size, pml, feedback)
+      .scanFile(name, size, pml, feedback, verbose)
       .then(result => result)
       .catch(err => {
         throw this.processError(err)
@@ -178,11 +182,14 @@ export class AmaasGrpcClient {
    * @param fileName - Filename
    * @param buff - Buffer to scan
    * @param tags - Tags to be added to the scan request
+   * @param pml - Flag to enable predictive machine learning detection.
+   * @param feedback - Flag to use Trend Micro Smart Protection Network's Smart Feedback.
+   * @param verbose - Flag to enable verbose mode in returning scan result
    */
-  public async scanBuffer (fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false): Promise<AmaasScanResultObject> {
+  public async scanBuffer (fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false, verbose: boolean = false): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     const scanRun = this.initScanRun(tags)
     return await scanRun
-      .scanBuffer(fileName, buff, pml, feedback)
+      .scanBuffer(fileName, buff, pml, feedback, verbose)
       .then(result => result)
       .catch(err => {
         throw this.processError(err)

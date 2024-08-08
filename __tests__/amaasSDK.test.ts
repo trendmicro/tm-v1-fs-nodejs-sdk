@@ -11,6 +11,7 @@ import { randomUUID } from 'crypto'
 
 import { AmaasGrpcClient } from '../src/lib/amaasGrpcClient'
 import { AmaasScanResultObject } from '../src/lib/amaasScanResultObject'
+import { AmaasScanResultVerbose } from '../src/lib/amaasScanResultVerbose'
 import { AmaasCredentials } from '../src/lib/amaasCredentials'
 import { Logger, LogLevel } from '../src/lib/logger'
 import * as scanPb from '../src/lib/protos/scan_pb'
@@ -188,7 +189,7 @@ describe('AmaasGrpcClient scanFile function testing', () => {
   it('should successfully scan file sequentially', async () => {
     const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
     const filesArray = filesToScan.slice(1)
-    const results: AmaasScanResultObject[] = []
+    const results: (AmaasScanResultObject | AmaasScanResultVerbose)[] = []
     const lastResult = await filesArray.reduce(
       async (promised, current) => {
         await promised.then(result => {
@@ -220,14 +221,30 @@ describe('AmaasGrpcClient scanFile function testing', () => {
     amaasGrpcClient.close()
   })
 
-  it('should scan file with tags successfully without TrendX and feedback', async () => {
+  it('should scan file with tags successfully without TrendX and feedback and in non verbose format', async () => {
     const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
     const tags = ['tag1', 'tag2', 'tag3']
     const pml = false
     const feedback = false
-    await amaasGrpcClient.scanFile(filesToScan[0], tags, pml, feedback)
+    const verbose = false
+    await amaasGrpcClient.scanFile(filesToScan[0], tags, pml, feedback, verbose)
       .then(result => {
-        expect(result.scanResult).not.toEqual(-1)
+        const regularResult = result as AmaasScanResultObject
+        expect(regularResult.scanResult).not.toEqual(-1)
+      })
+    amaasGrpcClient.close()
+  })
+
+  it('should scan file with tags successfully without TrendX and feedback and in verbose format', async () => {
+    const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
+    const tags = ['tag1', 'tag2', 'tag3']
+    const pml = false
+    const feedback = false
+    const verbose = true
+    await amaasGrpcClient.scanFile(filesToScan[0], tags, pml, feedback, verbose)
+      .then(result => {
+        const verboseResult = result as AmaasScanResultVerbose
+        expect(verboseResult.result).not.toEqual(null)
       })
     amaasGrpcClient.close()
   })
@@ -237,9 +254,10 @@ describe('AmaasGrpcClient scanFile function testing', () => {
     const tags = ['tag1', 'tag2', 'tag3']
     const pml = true
     const feedback = true
-    await amaasGrpcClient.scanFile(filesToScan[0], tags, pml, feedback)
+    const verbose = false
+    await amaasGrpcClient.scanFile(filesToScan[0], tags, pml, feedback, verbose)
       .then(result => {
-        expect(result.scanResult).not.toEqual(-1)
+        expect((result as AmaasScanResultObject).scanResult).not.toEqual(-1)
       })
     amaasGrpcClient.close()
   })
@@ -256,7 +274,7 @@ describe('AmaasGrpcClient scanBuffer function testing', () => {
   it('should successfully scan buffer sequentially', async () => {
     const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, grpcConnectionTimeout, enableTLS)
     const fileArray = filesToScan.slice(1)
-    const results: AmaasScanResultObject[] = []
+    const results: (AmaasScanResultObject | AmaasScanResultVerbose)[] = []
     const lastResult = await fileArray.reduce(
       async (promised, current) => {
         await promised.then(result => {
@@ -297,7 +315,7 @@ describe('AmaasGrpcClient scanBuffer function testing', () => {
     const tags = ['tag1', 'tag2', 'tag3']
     await amaasGrpcClient.scanBuffer(filesToScan[0], buff, tags)
       .then(result => {
-        expect(result.scanResult).not.toEqual(-1)
+        expect((result as AmaasScanResultObject).scanResult).not.toEqual(-1)
       })
     amaasGrpcClient.close()
   })
@@ -308,9 +326,10 @@ describe('AmaasGrpcClient scanBuffer function testing', () => {
     const tags = ['tag1', 'tag2', 'tag3']
     const pml = true
     const feedback = true
-    await amaasGrpcClient.scanBuffer(filesToScan[0], buff, tags, pml, feedback)
+    const verbose = false
+    await amaasGrpcClient.scanBuffer(filesToScan[0], buff, tags, pml, feedback, verbose)
       .then(result => {
-        expect(result.scanResult).not.toEqual(-1)
+        expect((result as AmaasScanResultObject).scanResult).not.toEqual(-1)
       })
     amaasGrpcClient.close()
   })
@@ -370,7 +389,7 @@ describe('error testing', () => {
     const tags = ['tag1', 'tag2', 'tag4']
     await amaasGrpcClient.scanFile(filesToScan[0], tags)
       .then(result => {
-        expect(result.scanResult).toEqual(-1)
+        expect((result as AmaasScanResultObject).scanResult).toEqual(-1)
       })
     amaasGrpcClient.close()
   })

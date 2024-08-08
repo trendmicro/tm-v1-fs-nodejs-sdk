@@ -21,9 +21,10 @@ const useKey = false
  * @param fileName - Name of the file to scan
  * @param tags - List of string to tag a scan
  * @param pml - Enable predictive machine learning detection
- * @param feedback: Enable Trend Micro Smart Protection Network's Smart Feedback
+ * @param feedback - Enable Trend Micro Smart Protection Network's Smart Feedback
+ * @param verbose - Flag to indicate whether return result in verbose format
  */
-const runFileScan = async (fileName: string, tags: string[], pml: boolean, feedback: boolean): Promise<void> => {
+const runFileScan = async (fileName: string, tags: string[], pml: boolean, feedback: boolean, verbose: boolean): Promise<void> => {
   console.log(`\nScanning '${fileName}'`)
   const amaasGrpcClient = useKey
     ? new AmaasGrpcClient(amaasHostName, key)
@@ -32,7 +33,7 @@ const runFileScan = async (fileName: string, tags: string[], pml: boolean, feedb
   loggerConfig(amaasGrpcClient)
 
   await amaasGrpcClient
-    .scanFile(fileName, tags, pml, feedback)
+    .scanFile(fileName, tags, pml, feedback, verbose)
     .then(result => {
       console.log(`${JSON.stringify(result)}`)
     })
@@ -49,5 +50,6 @@ void (async () => {
   const tags = ['example', 'test']
   const predictive_machine_learning = true
   const smart_feedback = true
-  await runFileScan('node_modules/@grpc/grpc-js/src/admin.ts', tags, predictive_machine_learning, smart_feedback)
+  const verbose = true
+  await runFileScan('node_modules/@grpc/grpc-js/src/admin.ts', tags, predictive_machine_learning, smart_feedback, verbose)
 })()
