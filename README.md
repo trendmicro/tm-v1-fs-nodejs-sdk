@@ -142,7 +142,7 @@ try {
 
 The AmaasGrpcClient class is the main class of the SDK and provides methods to interact with the API.
 
-#### `constructor( amaasHostName: string, credent: string, timeout: number | undefined = 300, enableTLS: boolean | undefined = true)`
+#### `constructor( amaasHostName: string, credent: string, timeout: number | undefined = 300, enableTLS: boolean | undefined = true, caCert: string | undefined = null)`
 
 Create a new instance of the `AmaasGrpcClient` class.
 
@@ -154,6 +154,7 @@ Create a new instance of the `AmaasGrpcClient` class.
 | credent       | Your own Vision One API Key.                                                                                                                                                                                                                         |               |
 | timeout       | Timeout to cancel the connection to server in seconds.                                                                                                                                                                                               | 300           |
 | enableTLS     | Enable or disable TLS. TLS should always be enabled when connecting to the File Security service. For more information, see the 'Ensuring Secure Communication with TLS' section.                                                                                                                                                            | true          |
+| caCert        | full path name of CA certificate pem file for self hosted scanner server. null if using Trend scanner services.                                                                                     | null          |
 
 **_Return_**
 An AmaasGrpcClient instance
@@ -170,7 +171,8 @@ Scan a file for malware and retrieves response data from the API.
 | tags      | The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
 | pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
 | feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
-| verbose  | This flag is to enable verbose format for returning scan result.                                             | false         |
+| verbose   | This flag is to enable verbose format for returning scan result.                                                         | false         |
+| digest    | This flag is to enable calculation of digests for cache search and result lookup.                                        | true          |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -188,7 +190,8 @@ Scan a buffer for malware and retrieves response data from the API.
 | tags      | The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
 | pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
 | feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
-| verbose  | This flag is to enable verbose format for returning scan result.                                            | false         |
+| verbose   | This flag is to enable verbose format for returning scan result.                                                         | false         |
+| digest    | This flag is to enable calculation of digests for cache search and result lookup.                                        | true          |
 
 **_Return_**
 A Promise that resolves to the API response data.

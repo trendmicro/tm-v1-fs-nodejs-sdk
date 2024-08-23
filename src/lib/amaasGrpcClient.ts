@@ -1,4 +1,4 @@
-import { statSync } from 'fs'
+import { statSync, readFileSync } from 'fs'
 import { status, credentials, Metadata, ServiceError } from '@grpc/grpc-js'
 
 import { ScanClient } from './protos/scan_grpc_pb'
@@ -28,6 +28,7 @@ export class AmaasGrpcClient {
    * @param credent - AmaasCredentials object
    * @param timeout - number in seconds to wait before closing the connection
    * @param enableTLS - enabling TLS
+   * @param caCert - full path name of CA certificate pem file for self hosted scanner server. null if using Trend scanner services.
    * @param appName - application name
    */
   constructor (
@@ -35,6 +36,7 @@ export class AmaasGrpcClient {
     credent: AmaasCredentials | string,
     timeout = 300,
     enableTLS = true,
+    caCert = null,
     appName = 'V1FS'
   ) {
     const key = typeof credent === 'string' ? credent : credent.secret
@@ -51,7 +53,16 @@ export class AmaasGrpcClient {
 
     try {
       if (enableTLS === true) {
-        const channelCred = credentials.createSsl()
+        let channelCred
+        if (caCert) {
+          // Bring Your Own Certificate case
+          const rootCert = readFileSync(caCert);
+          channelCred = credentials.createSsl(rootCert)
+        } else {
+          // Default SSL credentials case
+          channelCred = credentials.createSsl()
+        }
+        
         const metaCallback: CallMetadataGenerator = (
           _params,
           callback: (err: Error | null, metadata?: Metadata) => void
@@ -155,9 +166,10 @@ export class AmaasGrpcClient {
    * @param tags - Tags to be added to the scan request
    * @param pml - Flag to enable predictive machine learning detection.
    * @param feedback - Flag to use Trend Micro Smart Protection Network's Smart Feedback.
-   * @param verbose - Flag to enable verbose mode in returning scan result
+   * @param verbose - Flag to enable verbose mode in returning scan result.
+   * @param digest - Flag to enable calculation of digests for cache search and result lookup.
    */
-  public async scanFile (name: string, tags?: string[], pml: boolean = false, feedback: boolean = false, verbose: boolean = false): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
+  public async scanFile (name: string, tags?: string[], pml: boolean = false, feedback: boolean = false, verbose: boolean = false, digest: boolean = true): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     let size: number
 
     try {
@@ -169,7 +181,7 @@ export class AmaasGrpcClient {
 
     const scanRun = this.initScanRun(tags)
     return await scanRun
-      .scanFile(name, size, pml, feedback, verbose)
+      .scanFile(name, size, pml, feedback, verbose, digest)
       .then(result => result)
       .catch(err => {
         throw this.processError(err)
@@ -184,12 +196,13 @@ export class AmaasGrpcClient {
    * @param tags - Tags to be added to the scan request
    * @param pml - Flag to enable predictive machine learning detection.
    * @param feedback - Flag to use Trend Micro Smart Protection Network's Smart Feedback.
-   * @param verbose - Flag to enable verbose mode in returning scan result
+   * @param verbose - Flag to enable verbose mode in returning scan result.
+   * @param digest - Flag to enable calculation of digests for cache search and result lookup.
    */
-  public async scanBuffer (fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false, verbose: boolean = false): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
+  public async scanBuffer (fileName: string, buff: Buffer, tags?: string[], pml: boolean = false, feedback: boolean = false, verbose: boolean = false, digest: boolean = true): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     const scanRun = this.initScanRun(tags)
     return await scanRun
-      .scanBuffer(fileName, buff, pml, feedback, verbose)
+      .scanBuffer(fileName, buff, pml, feedback, verbose, digest)
       .then(result => result)
       .catch(err => {
         throw this.processError(err)
