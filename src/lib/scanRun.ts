@@ -58,10 +58,12 @@ export class ScanRun {
       initRequest.setTrendx(pml)
       initRequest.setSpnFeedback(feedback)
       initRequest.setVerbose(verbose)
-      this.logger.debug(`sha1: ${hashes[1]}`)
-      this.logger.debug(`sha256: ${hashes[0]}`)
-      initRequest.setFileSha1(`${sha1Prefix}${hashes[1]}`)
-      initRequest.setFileSha256(`${sha256Prefix}${hashes[0]}`)
+      const sha1Digest = hashes[1] ? `${sha1Prefix}${hashes[1]}` : ''
+      const sha256Digest = hashes[0] ? `${sha256Prefix}${hashes[0]}` : ''
+      this.logger.debug(`sha1: ${sha1Digest}`)
+      this.logger.debug(`sha256: ${sha256Digest}`)
+      initRequest.setFileSha1(sha1Digest)
+      initRequest.setFileSha256(sha256Digest)
       initRequest.setBulk(this.bulk)
       stream.write(initRequest)
     })
@@ -135,9 +137,10 @@ export class ScanRun {
     size: number,
     pml: boolean,
     feedback: boolean,
-    verbose: boolean
+    verbose: boolean,
+    digest: boolean
   ): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
-    const hashes = await getHashes(name, ['sha256', 'sha1'], 'hex')
+    const hashes = digest ? await getHashes(name, ['sha256', 'sha1'], 'hex') : [ '', '' ]
     return await this.streamRun(name, size, hashes, pml, feedback, verbose)
       .then(result => {
         return result
@@ -150,10 +153,11 @@ export class ScanRun {
     buff: Buffer,
     pml: boolean,
     feedback: boolean,
-    verbose: boolean
+    verbose: boolean,
+    digest: boolean
   ): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     const size = Buffer.byteLength(buff)
-    const hashes = await getBufferHashes(buff, ['sha256', 'sha1'], 'hex')
+    const hashes = digest ? await getBufferHashes(buff, ['sha256', 'sha1'], 'hex') : [ '', '' ]
     return await this.streamRun(name, size, hashes, pml, feedback, verbose, buff)
       .then(result => result)
       .catch(err => { throw err })
