@@ -395,3 +395,9 @@ The communication channel between the client program or SDK and the Trend Vision
 The certificate employed by server-side TLS is a publicly-signed certificate from Trend Micro Inc, issued by a trusted Certificate Authority (CA), further bolstering security measures.
 
 The File Security SDK consistently adopts TLS as the default communication channel, prioritizing security at all times. It is strongly advised not to disable TLS in a production environment while utilizing the File Security SDK, as doing so could compromise the integrity and confidentiality of transmitted data.
+
+## Disabling certificate verification
+
+For customers who need to enable TLS channel encryption without verifying the provided CA certificate, the Node.js environment variable `NODE_TLS_REJECT_UNAUTHORIZED` can be set to `0`.
+
+When `NODE_TLS_REJECT_UNAUTHORIZED` is set to `0`, certificate validation is disabled for TLS connections, which compromises the security of the connection. Therefore, this configuration should only be used in testing environments.
