@@ -1,6 +1,6 @@
 {
   "name": "file-security-sdk",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Vision One File Security API library in TypeScript",
   "main": "index.js",
   "engines": {

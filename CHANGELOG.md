@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.1 - 2024-08-27
+
+* Update README.md for certificate verification bypass
+
 ## 1.4.0 - 2024-08-23
 
 * Update README.md
