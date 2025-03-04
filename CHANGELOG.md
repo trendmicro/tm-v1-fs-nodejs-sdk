@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.4.2 - 2025-03-03
+
+* Support new region me-central-1
+* Upgrade @grpc/grpc-js to 1.9.15
+* Upgrade google-protbuf to 3.21.4
+
 ## 1.4.1 - 2024-08-27
 
 * Update README.md for certificate verification bypass
