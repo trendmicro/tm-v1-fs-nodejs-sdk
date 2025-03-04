@@ -13,6 +13,7 @@ const AWS_DE_REGION = 'eu-central-1'
 // const AWS_CA_REGION = 'ca-central-1'
 // const AWS_TREND_REGION = 'us-east-2'
 // const AWS_GB_REGION = 'eu-west-2'
+const AWS_AE_REGION = 'me-central-1'
 const C1_JP_REGION = 'jp-1'
 const C1_SG_REGION = 'sg-1'
 const C1_AU_REGION = 'au-1'
@@ -22,11 +23,13 @@ const C1_DE_REGION = 'de-1'
 const C1_CA_REGION = 'ca-1'
 // const C1_TREND_REGION = 'trend-us-1'
 const C1_GB_REGION = 'gb-1'
+const C1_AE_REGION = 'ae-1'
+
 /*
 const C1Regions = [C1_AU_REGION, C1_CA_REGION, C1_DE_REGION, C1_GB_REGION, C1_IN_REGION, C1_JP_REGION, C1_SG_REGION,
   C1_US_REGION, C1_TREND_REGION]
 */
-const V1Regions = [AWS_AU_REGION, AWS_DE_REGION, AWS_JP_REGION, AWS_SG_REGION, AWS_US_REGION, AWS_IN_REGION]
+const V1Regions = [AWS_AU_REGION, AWS_DE_REGION, AWS_JP_REGION, AWS_SG_REGION, AWS_US_REGION, AWS_IN_REGION, AWS_AE_REGION]
 const SupportedV1Regions = V1Regions
 // const SupportedC1Regions = [C1_AU_REGION, C1_CA_REGION, C1_DE_REGION, C1_GB_REGION, C1_IN_REGION, C1_JP_REGION, C1_SG_REGION, C1_US_REGION]
 
@@ -40,6 +43,7 @@ const V1ToC1RegionMapping = new Map<string, string>([
   [AWS_JP_REGION, C1_JP_REGION],
   [AWS_SG_REGION, C1_SG_REGION],
   [AWS_US_REGION, C1_US_REGION],
+  [AWS_AE_REGION, C1_AE_REGION],
 ]
 )
 
@@ -74,6 +78,7 @@ export const getFQDN = (region: string): string => {
     [C1_JP_REGION, 'antimalware.jp-1.cloudone.trendmicro.com:443'],
     [C1_GB_REGION, 'antimalware.gb-1.cloudone.trendmicro.com:443'],
     [C1_CA_REGION, 'antimalware.ca-1.cloudone.trendmicro.com:443'],
+    [C1_AE_REGION, 'antimalware.ae-1.cloudone.trendmicro.com:443'],
   ]
   )
 
