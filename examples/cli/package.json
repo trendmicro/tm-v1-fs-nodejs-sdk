@@ -6,7 +6,7 @@
   "author": "Trend Micro Inc",
   "main": "index.js",
   "engines": {
-    "node": ">=16.20.1"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "prebuild": "rm -rf dist",

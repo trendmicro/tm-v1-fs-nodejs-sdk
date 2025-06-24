@@ -1,11 +1,11 @@
 # Build stage
-FROM node:16.20.1-slim@sha256:f66adfa1694f8345d2ec4c2dedded87055be5182f62ac33032ea7b252b1b2963 as build_env
+FROM node:20.19.0-slim@sha256:5cfa999422613d3b34f766cbb814d964cbfcb76aaf3607e805da21cccb352bac as build_env
 
 RUN useradd -m su-amaas
 
 ## Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    protobuf-compiler=3.6.1.3-2+deb10u1 \
+    protobuf-compiler \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

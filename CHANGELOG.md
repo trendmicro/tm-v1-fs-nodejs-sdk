@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.4.3 - 2025-06-03
+* Upgrade nodejs version to 20.19.0
+
 ## 1.4.2 - 2025-03-03
 
 * Support new region me-central-1

@@ -72,15 +72,16 @@ const runImpl = (call: any): void => {
           cmdQuitS2CMessage.result = JSON.stringify(resultJson)
           call.write(cmdQuitS2CMessage)
           call.end()
+          return;
         }
       }
-
       rsSize = request.rs_size
 
       // Returns CMD_QUIT if request's rs_size is zero
       if (rsSize === 0) {
         call.write(cmdQuitS2CMessage)
         call.end()
+        return;
       } else {
         const start = getRandomNumber(0, rsSize - 1)
         const end = getRandomNumber(start, rsSize - 1)
@@ -91,6 +92,7 @@ const runImpl = (call: any): void => {
       if (counts >= maxRuns) {
         call.write(cmdQuitS2CMessage)
         call.end()
+        return;
       } else {
         counts += 1
         const start = getRandomNumber(0, rsSize - 1)
@@ -342,7 +344,7 @@ describe('error testing', () => {
     expect(() => {
       const amaasScanClient = new AmaasGrpcClient(amaasHostName, authKey)
       expect(amaasScanClient).toBeUndefined()
-    }).toThrowError(error)
+    }).toThrow(error)
   })
   it('should return an error if invalid region', () => {
     const region = 'us1'
@@ -350,7 +352,7 @@ describe('error testing', () => {
     expect(() => {
       const amaasScanClient = new AmaasGrpcClient(region, authKey)
       expect(amaasScanClient).toBeUndefined()
-    }).toThrowError(error)
+    }).toThrow(error)
   })
 
   it('should return an error when incorrect TLS protocol is used', async () => {
@@ -366,10 +368,10 @@ describe('error testing', () => {
     const deadline = 0
     const amaasGrpcClient = new AmaasGrpcClient(amaasHostName, authKey, deadline)
     expect(amaasGrpcClient).toBeDefined()
-    const error = new Error('The request deadline was exceeded. Deadline exceeded')
+    const errorMessagePrefix = /^The request deadline was exceeded/;
     await expect(async () => {
       await amaasGrpcClient.scanFile(filesToScan[0])
-    }).rejects.toEqual(error)
+    }).rejects.toThrow(errorMessagePrefix)
     amaasGrpcClient.close()
   })
 
@@ -438,7 +440,7 @@ describe('Utils testing', () => {
     const error = new Error(`Tags size ${tags.length} is greater than ${maxTags}: ${tags}`)
     expect(() => {
       validateTags(tags)
-    }).toThrowError(error)
+    }).toThrow(error)
   })
   it('getHashes should return sha256 and sha1 correctly', async () => {
     await expect(getHashes('__tests__/sha_test_file.txt', ['sha256', 'sha1'], 'hex'))
@@ -463,7 +465,7 @@ describe('Utils testing', () => {
     const error = new Error(`Tag size ${tags[0].length} is greater than ${maxTagLength}: ${tags[0]}`)
     expect(() => {
       validateTags(tags)
-    }).toThrowError(error)
+    }).toThrow(error)
   })
 })
 describe('Logger class testing', () => {

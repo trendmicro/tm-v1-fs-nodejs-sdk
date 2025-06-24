@@ -4,7 +4,7 @@ Follow the instructions below to build and run example code.
 
 ## Prerequisites
 
-- NodeJS version 16.20.1+, 18.x or above
+- NodeJS version 20.19.0 or above
 - A Trend Vision One API key - for more information, see the [Trend Vision One API key documentation](https://docs.trendmicro.com/en-us/enterprise/trend-vision-one/administrative-setti/accountspartfoundati/api-keys.aspx).
 
 ## Build and Run Examples
