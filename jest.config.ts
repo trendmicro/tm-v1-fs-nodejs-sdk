@@ -9,4 +9,11 @@ export default {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
+  transformIgnorePatterns: [
+    'node_modules/(?!(@protobuf-ts)/)'
+  ],
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.jsx?$': 'ts-jest'
+  }
 }
