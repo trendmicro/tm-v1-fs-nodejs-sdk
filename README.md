@@ -105,17 +105,17 @@ try {
   // Example of scanFile
   const fileToScan = "path/to/file.ext";
   const fileScanResult = await scanClient.scanFile(
-  fileToScan, 
-  ["tag1", "tag2", "tag3"],
-  pml,
-  feedback
+    fileToScan,
+    ["tag1", "tag2", "tag3"],
+    pml,
+    feedback
   );
   console.log(`Number of malware found: ${result.scanResult}`); // Scan result handling
 
   // Example of scanBuffer
   const buff = await readFileSync(fileToScan);
-  const pml = true
-  const feedback = true
+  const pml = true;
+  const feedback = true;
   const bufferScanResult = await scanClient.scanBuffer(
     "THE_FILE_NAME_OR_IDENTIFIER",
     buff,
@@ -148,13 +148,13 @@ Create a new instance of the `AmaasGrpcClient` class.
 
 **_Parameters_**
 
-| Parameter     | Description                                                                                                                                                                                                                                          | Default value |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| amaasHostName | The region of your Vision One account. The region is the location where you acquire your api key. Value provided must be one of the Vision One regions, e.g. `ap-northeast-1`, `ap-south-1`, `ap-southeast-1`, `ap-southeast-2`, `eu-central-1`, `us-east-1`, `me-central-1`, etc. |               |
-| credent       | Your own Vision One API Key.                                                                                                                                                                                                                         |               |
-| timeout       | Timeout to cancel the connection to server in seconds.                                                                                                                                                                                               | 300           |
-| enableTLS     | Enable or disable TLS. TLS should always be enabled when connecting to the File Security service. For more information, see the 'Ensuring Secure Communication with TLS' section.                                                                                                                                                            | true          |
-| caCert        | full path name of CA certificate pem file for self hosted scanner server. null if using Trend scanner services.                                                                                     | null          |
+| Parameter     | Description                                                                                                                                                                                                                                                                                                     | Default value |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| amaasHostName | The region of your Vision One account. The region is the location where you acquire your api key. Value provided must be one of the Vision One regions, e.g. `ap-northeast-1`, `ap-south-1`, `ap-southeast-1`, `ap-southeast-2`, `eu-central-1`, `us-east-1`, `me-central-1`, `eu-west-2`, `ca-central-1`, etc. |               |
+| credent       | Your own Vision One API Key.                                                                                                                                                                                                                                                                                    |               |
+| timeout       | Timeout to cancel the connection to server in seconds.                                                                                                                                                                                                                                                          | 300           |
+| enableTLS     | Enable or disable TLS. TLS should always be enabled when connecting to the File Security service. For more information, see the 'Ensuring Secure Communication with TLS' section.                                                                                                                               | true          |
+| caCert        | full path name of CA certificate pem file for self hosted scanner server. null if using Trend scanner services.                                                                                                                                                                                                 | null          |
 
 **_Return_**
 An AmaasGrpcClient instance
@@ -165,14 +165,14 @@ Scan a file for malware and retrieves response data from the API.
 
 **_Parameters_**
 
-| Parameter | Description                                                                                                              | Default value |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- |
-| name      | The name of the file with path of directory containing the file to scan.                                                 |               |
+| Parameter | Description                                                                                                 | Default value |
+| --------- | ----------------------------------------------------------------------------------------------------------- | ------------- |
+| name      | The name of the file with path of directory containing the file to scan.                                    |               |
 | tags      | The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
-| pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
-| feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
-| verbose   | This flag is to enable verbose format for returning scan result.                                                         | false         |
-| digest    | This flag is to enable calculation of digests for cache search and result lookup.                                        | true          |
+| pml       | This flag is to enable Trend's predictive machine learning detection.                                       | false         |
+| feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                               | false         |
+| verbose   | This flag is to enable verbose format for returning scan result.                                            | false         |
+| digest    | This flag is to enable calculation of digests for cache search and result lookup.                           | true          |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -183,15 +183,15 @@ Scan a buffer for malware and retrieves response data from the API.
 
 **_Parameters_**
 
-| Parameter | Description                                                                                                              | Default value |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- |
-| fileName  | The name of the file or object the buffer is created from. The name is used to identify the buffer.                      | |
-| buff      | The buffer to scan.                                                                                                      |               |
+| Parameter | Description                                                                                                 | Default value |
+| --------- | ----------------------------------------------------------------------------------------------------------- | ------------- |
+| fileName  | The name of the file or object the buffer is created from. The name is used to identify the buffer.         |               |
+| buff      | The buffer to scan.                                                                                         |               |
 | tags      | The list of tags which can be used to tag the scan. Max size of tags list is 8. Max size of each tag is 63. |               |
-| pml       | This flag is to enable Trend's predictive machine learning detection.                                                    | false         |
-| feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                                            | false         |
-| verbose   | This flag is to enable verbose format for returning scan result.                                                         | false         |
-| digest    | This flag is to enable calculation of digests for cache search and result lookup.                                        | true          |
+| pml       | This flag is to enable Trend's predictive machine learning detection.                                       | false         |
+| feedback  | This flag is to enable Trend Micro Smart Protection Network's Smart Feedback.                               | false         |
+| verbose   | This flag is to enable verbose format for returning scan result.                                            | false         |
+| digest    | This flag is to enable calculation of digests for cache search and result lookup.                           | true          |
 
 **_Return_**
 A Promise that resolves to the API response data.
@@ -247,7 +247,7 @@ interface AmaasScanResultObject {
   scanTimestamp: string; // Timestamp of the scan in ISO 8601 format
   fileName: string; // Name of the file scanned
   scanId: string; // ID of the scan
-  
+
   foundMalwares: [
     // A list of malware names and the filenames found by AMaaS
     {
@@ -270,94 +270,83 @@ The AmaasScanResultVerbose interface defines the structure of the response data 
 The following are the fields in the interface.
 
 ```typescript
-
 interface AmaasScanResultVerbose {
-  scanType: string
-  objectType: string
+  scanType: string;
+  objectType: string;
   timestamp: {
-    start: string
-    end: string
-  }
-  schemaVersion: string
-  scannerVersion: string
-  fileName: string
-  rsSize: number
-  scanId: string
-  accountId: string
+    start: string;
+    end: string;
+  };
+  schemaVersion: string;
+  scannerVersion: string;
+  fileName: string;
+  rsSize: number;
+  scanId: string;
+  accountId: string;
   result: {
     atse: {
-      elapsedTime: number
-      fileType: number
-      fileSubType: number
+      elapsedTime: number;
+      fileType: number;
+      fileSubType: number;
       version: {
-        engine: string
-        lptvpn: number
-        ssaptn: number
-        tmblack: number
-        tmwhite: number
-        macvpn: number
-      }
-      malwareCount: number
-      malware: Array<
-        {
-          name: string
-          fileName: string
-          type: string
-          fileType: number
-          fileTypeName: string
-          fileSubType: number
-          fileSubTypeName: string
-        }
-      > | null
-      error: Array<
-        {
-          code: number
-          message: string
-        }
-      > | null
-      fileTypeName: string
-      fileSubTypeName: string
-    }
+        engine: string;
+        lptvpn: number;
+        ssaptn: number;
+        tmblack: number;
+        tmwhite: number;
+        macvpn: number;
+      };
+      malwareCount: number;
+      malware: Array<{
+        name: string;
+        fileName: string;
+        type: string;
+        fileType: number;
+        fileTypeName: string;
+        fileSubType: number;
+        fileSubTypeName: string;
+      }> | null;
+      error: Array<{
+        code: number;
+        message: string;
+      }> | null;
+      fileTypeName: string;
+      fileSubTypeName: string;
+    };
     trendx?: {
-      elapsedTime: number
-      fileType: number
-      fileSubType: number
+      elapsedTime: number;
+      fileType: number;
+      fileSubType: number;
       version: {
-        engine: string
-        tmblack: number
-        tmwhite: number
-        trendx: number
-      }
-      malwareCount: number
-      malware: Array<
-        {
-          name: string
-          fileName: string
-          type: string
-          fileType: number
-          fileTypeName: string
-          fileSubType: number
-          fileSubTypeName: string
-        }
-      > | null
-      error: Array<
-        {
-          code: number
-          message: string
-        }
-      > | null
-      fileTypeName: string
-      fileSubTypeName: string
-    }
-  }
-  tags?: [ string ]
-  fileSHA1: string
-  fileSHA256: string
-  appName: string
+        engine: string;
+        tmblack: number;
+        tmwhite: number;
+        trendx: number;
+      };
+      malwareCount: number;
+      malware: Array<{
+        name: string;
+        fileName: string;
+        type: string;
+        fileType: number;
+        fileTypeName: string;
+        fileSubType: number;
+        fileSubTypeName: string;
+      }> | null;
+      error: Array<{
+        code: number;
+        message: string;
+      }> | null;
+      fileTypeName: string;
+      fileSubTypeName: string;
+    };
+  };
+  tags?: [string];
+  fileSHA1: string;
+  fileSHA256: string;
+  appName: string;
 }
-
 ```
-
 
 ### `LogLevel`
 

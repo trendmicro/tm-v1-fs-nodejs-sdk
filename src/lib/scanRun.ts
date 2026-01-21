@@ -1,8 +1,8 @@
 import { basename } from 'path'
 import { openSync, readSync, closeSync } from 'fs'
 
-import * as scanPb from './protos/scan_pb'
-import { ScanClient } from './protos/scan_grpc_pb'
+import { C2S, S2C, Stage, Command } from './protos/scan'
+import { ScanClient } from './protos/scan.grpc-client'
 import { AmaasScanResultObject } from './amaasScanResultObject'
 import { AmaasScanResultVerbose } from './amaasScanResultVerbose'
 import { Logger } from './logger'
@@ -33,7 +33,7 @@ export class ScanRun {
     return await new Promise<AmaasScanResultObject | AmaasScanResultVerbose>((resolve, reject) => {
       const _deadline: Deadline = new Date().getTime() + this.deadline * 1000
       const stream = this.scanClient.run({ deadline: _deadline })
-      stream.on('data', (response: scanPb.S2C) => {
+      stream.on('data', (response: S2C) => {
         this.handleStreamData(response, fileName, verbose, stream, buff)
       })
       stream.on('error', (err: Error) => {
@@ -47,57 +47,58 @@ export class ScanRun {
       })
 
       // INIT stage
-      const initRequest = new scanPb.C2S()
-      initRequest.setStage(scanPb.Stage.STAGE_INIT)
-      const fileNameToSet = buff !== undefined ? fileName : basename(fileName)
-      initRequest.setFileName(fileNameToSet)
-      initRequest.setRsSize(fileSize)
-      if (this.tags) {
-        initRequest.setTagsList(this.tags)
-      }
-      initRequest.setTrendx(pml)
-      initRequest.setSpnFeedback(feedback)
-      initRequest.setVerbose(verbose)
       const sha1Digest = hashes[1] ? `${sha1Prefix}${hashes[1]}` : ''
       const sha256Digest = hashes[0] ? `${sha256Prefix}${hashes[0]}` : ''
       this.logger.debug(`sha1: ${sha1Digest}`)
       this.logger.debug(`sha256: ${sha256Digest}`)
-      initRequest.setFileSha1(sha1Digest)
-      initRequest.setFileSha256(sha256Digest)
-      initRequest.setBulk(this.bulk)
+      const fileNameToSet = buff !== undefined ? fileName : basename(fileName)
+      const initRequest: C2S = {
+        stage: Stage.INIT,
+        fileName: fileNameToSet,
+        rsSize: fileSize.toString(),
+        offset: 0,
+        chunk: new Uint8Array(),
+        trendx: pml,
+        fileSha1: sha1Digest,
+        fileSha256: sha256Digest,
+        tags: this.tags || [],
+        bulk: this.bulk,
+        spnFeedback: feedback,
+        verbose: verbose
+      }
       stream.write(initRequest)
     })
   }
 
   private handleStreamData (
-    response: scanPb.S2C,
+    response: S2C,
     fileName: string,
     verbose: boolean,
-    stream: ClientDuplexStream<scanPb.C2S, scanPb.S2C>,
+    stream: ClientDuplexStream<C2S, S2C>,
     buff?: Buffer
   ): void {
-    const cmd = response.getCmd()
-    const stage = response.getStage()
+    const cmd = response.cmd
+    const stage = response.stage
 
-    if (cmd === scanPb.Command.CMD_RETR) {
+    if (cmd === Command.CMD_RETR) {
       let bulkLength: number[] = []
       let bulkOffset: number[] = []
 
-      if (stage !== scanPb.Stage.STAGE_RUN) {
+      if (stage !== Stage.RUN) {
         throw new Error(`Received unexpected command ${cmd} and stage ${stage}.`)
       }
 
       if (this.bulk) {
         this.logger.debug("enter bulk mode")
-        const bulkCount = response.getBulkOffsetList().length
+        const bulkCount = response.bulkOffset.length
         if (bulkCount > 1) {
           this.logger.debug("bulk transfer triggered")
         }
-        bulkLength = response.getBulkLengthList()
-        bulkOffset = response.getBulkOffsetList()
+        bulkLength = response.bulkLength
+        bulkOffset = response.bulkOffset
       } else {
-        bulkLength = [response.getLength()]
-        bulkOffset = [response.getOffset()]
+        bulkLength = [response.length]
+        bulkOffset = [response.offset]
       }
 
       const fd = buff !== undefined ? undefined : openSync(fileName, 'r')
@@ -110,19 +111,29 @@ export class ScanRun {
           readSync(fd, chunk, 0, bulkLength[i], bulkOffset[i])
         }
 
-        const request = new scanPb.C2S()
-        request.setStage(scanPb.Stage.STAGE_RUN)
-        request.setOffset(bulkOffset[i])
-        request.setChunk(chunk)
+        const request: C2S = {
+          stage: Stage.RUN,
+          fileName: '',
+          rsSize: '0',
+          offset: bulkOffset[i],
+          chunk: chunk,
+          trendx: false,
+          fileSha1: '',
+          fileSha256: '',
+          tags: [],
+          bulk: false,
+          spnFeedback: false,
+          verbose: false
+        }
         stream.write(request)
       }
 
       if (fd !== undefined) {
         closeSync(fd)
       }
-    } else if (cmd === scanPb.Command.CMD_QUIT) {
+    } else if (cmd === Command.CMD_QUIT) {
       this.logger.debug('receive QUIT, exit loop...\n')
-      const result = response.getResult()
+      const result = response.result
       const resultJson = JSON.parse(result)
       this.finalResult = resultJson
       stream.end()
