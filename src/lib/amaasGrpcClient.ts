@@ -1,7 +1,7 @@
 import { statSync, readFileSync } from 'fs'
 import { status, credentials, Metadata, ServiceError } from '@grpc/grpc-js'
 
-import { ScanClient } from './protos/scan_grpc_pb'
+import { ScanClient } from './protos/scan.grpc-client'
 import { ScanRun } from './scanRun'
 import { AmaasScanResultObject } from './amaasScanResultObject'
 import { AmaasScanResultVerbose } from './amaasScanResultVerbose'

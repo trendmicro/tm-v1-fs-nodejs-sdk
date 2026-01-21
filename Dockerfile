@@ -3,12 +3,6 @@ FROM node:20.19.0-slim@sha256:5cfa999422613d3b34f766cbb814d964cbfcb76aaf3607e805
 
 RUN useradd -m su-amaas
 
-## Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    protobuf-compiler \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
 USER su-amaas
 
 ## Copy source codes and documents
@@ -20,16 +14,16 @@ WORKDIR /home/su-amaas
 
 RUN npm ci
 
-## Generate protobuf files
-RUN npx grpc_tools_node_protoc \
-    --js_out=import_style=commonjs,binary:./src/lib \
-    --grpc_out=grpc_js:./src/lib \
-    --plugin=protoc-gen-grpc=./node_modules/.bin/grpc_tools_node_protoc_plugin \
-    ./protos/scan.proto
+RUN mkdir -p ./src/lib/protos
 
-RUN protoc \
-    --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
-    --ts_out=grpc_js:./src/lib \
+## Generate protobuf files with protobuf-ts
+RUN npx protoc \
+    --ts_out ./src/lib/protos \
+    --ts_opt generate_dependencies \
+    --ts_opt long_type_string \
+    --ts_opt output_javascript \
+    --ts_opt client_grpc1 \
+    --proto_path ./protos \
     ./protos/scan.proto
 
 RUN mkdir -p ./output
@@ -50,7 +44,7 @@ COPY --chown=su-amaas:su-amaas __tests__ /home/su-amaas/__tests__
 RUN TM_AM_LOG_LEVEL=${TM_AM_LOG_LEVEL} npm test
 
 # Publish stage
-FROM node:16.20.1-slim@sha256:f66adfa1694f8345d2ec4c2dedded87055be5182f62ac33032ea7b252b1b2963
+FROM node:20.19.0-slim@sha256:5cfa999422613d3b34f766cbb814d964cbfcb76aaf3607e805da21cccb352bac
 
 RUN useradd -m su-amaas
 

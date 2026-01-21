@@ -14,7 +14,7 @@ import { AmaasScanResultObject } from '../src/lib/amaasScanResultObject'
 import { AmaasScanResultVerbose } from '../src/lib/amaasScanResultVerbose'
 import { AmaasCredentials } from '../src/lib/amaasCredentials'
 import { Logger, LogLevel } from '../src/lib/logger'
-import * as scanPb from '../src/lib/protos/scan_pb'
+import { Stage, Command } from '../src/lib/protos/scan'
 import { isJWT, validateTags, getHashes, getBufferHashes } from '../src/lib/utils'
 import { readFile } from './utils/fileUtils'
 import { generateJwtToken } from './utils/jwtTokens'
@@ -50,8 +50,8 @@ const runImpl = (call: any): void => {
   let counts = 0
   let rsSize = 0
   const cmdQuitS2CMessage = {
-    cmd: scanPb.Command.CMD_QUIT,
-    stage: scanPb.Stage.STAGE_FINI,
+    cmd: Command.CMD_QUIT,
+    stage: Stage.FINI,
     result: JSON.stringify({
       version: '1.0',
       fileName: 'faked-file.txt',
@@ -85,7 +85,7 @@ const runImpl = (call: any): void => {
       } else {
         const start = getRandomNumber(0, rsSize - 1)
         const end = getRandomNumber(start, rsSize - 1)
-        call.write({ cmd: scanPb.Command.CMD_RETR, stage: scanPb.Stage.STAGE_RUN, bulk_offset: [start], bulk_length: [end - start], length: end - start })
+        call.write({ cmd: Command.CMD_RETR, stage: Stage.RUN, bulk_offset: [start], bulk_length: [end - start], length: end - start })
       }
     } else if (stage === 'STAGE_RUN') {
       // Send CMD_QUIT if maximum number of runs is reached
@@ -97,7 +97,7 @@ const runImpl = (call: any): void => {
         counts += 1
         const start = getRandomNumber(0, rsSize - 1)
         const end = getRandomNumber(start, rsSize - 1)
-        call.write({ cmd: scanPb.Command.CMD_RETR, stage: scanPb.Stage.STAGE_RUN, bulk_offset: [start], bulk_length: [end - start], length: end - start })
+        call.write({ cmd: Command.CMD_RETR, stage: Stage.RUN, bulk_offset: [start], bulk_length: [end - start], length: end - start })
       }
     } else {
       // other stages
@@ -348,7 +348,7 @@ describe('error testing', () => {
   })
   it('should return an error if invalid region', () => {
     const region = 'us1'
-    const error = new Error(`Invalid region: ${region}, region value should be one of ap-southeast-2,eu-central-1,ap-northeast-1,ap-southeast-1,us-east-1,ap-south-1,me-central-1`)
+    const error = new Error(`Invalid region: ${region}, region value should be one of ap-southeast-2,eu-central-1,ap-northeast-1,ap-southeast-1,us-east-1,ap-south-1,me-central-1,eu-west-2,ca-central-1`)
     expect(() => {
       const amaasScanClient = new AmaasGrpcClient(region, authKey)
       expect(amaasScanClient).toBeUndefined()

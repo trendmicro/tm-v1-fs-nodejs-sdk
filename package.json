@@ -1,6 +1,6 @@
 {
   "name": "file-security-sdk",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Vision One File Security API library in TypeScript",
   "main": "index.js",
   "engines": {
@@ -25,13 +25,15 @@
   },
   "homepage": "https://github.com/trendmicro/tm-v1-fs-nodejs-sdk",
   "dependencies": {
-    "@grpc/grpc-js": "^1.9.15",
-    "google-protobuf": "^3.21.4"
+    "@grpc/grpc-js": "^1.14.1",
+    "@protobuf-ts/runtime": "^2.9.4",
+    "@protobuf-ts/runtime-rpc": "^2.9.4"
   },
   "devDependencies": {
     "@grpc/proto-loader": "^0.7.8",
+    "@protobuf-ts/plugin": "^2.9.4",
+    "@protobuf-ts/protoc": "^2.9.4",
     "@tsconfig/node16": "^16.1.1",
-    "@types/google-protobuf": "^3.15.6",
     "@types/jest": "^29.2.5",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^18.11.18",
@@ -39,8 +41,6 @@
     "@typescript-eslint/parser": "^6.1.0",
     "eslint": "^8.45.0",
     "eslint-plugin-import": "^2.27.5",
-    "grpc_tools_node_protoc_ts": "^5.3.2",
-    "grpc-tools": "^1.12.3",
     "jest": "^29.3.1",
     "jest-junit": "^15.0.0",
     "jsonwebtoken": "^9.0.1",

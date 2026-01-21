@@ -1,27 +1,32 @@
 # CHANGELOG
 
+## 1.4.4 - 2026-01-19
+
+- Support new regions eu-west-2 and ca-central-1
+
 ## 1.4.3 - 2025-06-03
-* Upgrade nodejs version to 20.19.0
+
+- Upgrade nodejs version to 20.19.0
 
 ## 1.4.2 - 2025-03-03
 
-* Support new region me-central-1
-* Upgrade @grpc/grpc-js to 1.9.15
-* Upgrade google-protbuf to 3.21.4
+- Support new region me-central-1
+- Upgrade @grpc/grpc-js to 1.9.15
+- Upgrade google-protbuf to 3.21.4
 
 ## 1.4.1 - 2024-08-27
 
-* Update README.md for certificate verification bypass
+- Update README.md for certificate verification bypass
 
 ## 1.4.0 - 2024-08-23
 
-* Update README.md
-* Support digest calculation bypass
+- Update README.md
+- Support digest calculation bypass
 
 ## 1.3.0 - 2024-08-21
 
-* Update README.md
-* Support CA cert import
+- Update README.md
+- Support CA cert import
 
 ## 1.2.0 - 2024-08-08
 
