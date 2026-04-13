@@ -11,7 +11,7 @@ Follow the steps below to set up your development environment and configure your
 
 Before installing the SDK, ensure you have the following:
 
-- Node.js version 20.19.0 or above
+- Node.js version 22.11.0 or above
 - Trend Vision One account associated with your region - for more information, see the [Trend Vision One account document](https://docs.trendmicro.com/en-us/documentation/article/trend-vision-one-accountspartfoundati).
 - Custom role with File Security permissions
 
@@ -150,7 +150,7 @@ Create a new instance of the `AmaasGrpcClient` class.
 
 | Parameter     | Description                                                                                                                                                                                                                                                                                                     | Default value |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| amaasHostName | The region of your Vision One account. The region is the location where you acquire your api key. Value provided must be one of the Vision One regions, e.g. `ap-northeast-1`, `ap-south-1`, `ap-southeast-1`, `ap-southeast-2`, `eu-central-1`, `us-east-1`, `me-central-1`, `eu-west-2`, `ca-central-1`, etc. |               |
+| amaasHostName | The region of your Vision One account. The region is the location where you acquire your api key. Value provided must be one of the Vision One regions, e.g. `ap-northeast-1`, `ap-south-1`, `ap-southeast-1`, `ap-southeast-2`, `eu-central-1`, `us-east-1`, `me-central-1`, `eu-west-2`, `ca-central-1`, `af-south-1`, etc. |               |
 | credent       | Your own Vision One API Key.                                                                                                                                                                                                                                                                                    |               |
 | timeout       | Timeout to cancel the connection to server in seconds.                                                                                                                                                                                                                                                          | 300           |
 | enableTLS     | Enable or disable TLS. TLS should always be enabled when connecting to the File Security service. For more information, see the 'Ensuring Secure Communication with TLS' section.                                                                                                                               | true          |

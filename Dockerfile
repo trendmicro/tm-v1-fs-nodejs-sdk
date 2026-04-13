@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20.19.0-slim@sha256:5cfa999422613d3b34f766cbb814d964cbfcb76aaf3607e805da21cccb352bac as build_env
+FROM node:22.11.0-slim as build_env
 
 RUN useradd -m su-amaas
 
@@ -44,12 +44,9 @@ COPY --chown=su-amaas:su-amaas __tests__ /home/su-amaas/__tests__
 RUN TM_AM_LOG_LEVEL=${TM_AM_LOG_LEVEL} npm test
 
 # Publish stage
-FROM node:20.19.0-slim@sha256:5cfa999422613d3b34f766cbb814d964cbfcb76aaf3607e805da21cccb352bac
+FROM node:22.11.0-slim
 
 RUN useradd -m su-amaas
-
-ARG PACK_CMD=pack
-ARG NPM_TOKEN
 
 USER su-amaas
 
@@ -57,7 +54,5 @@ COPY --from=build_env --chown=su-amaas:su-amaas /home/su-amaas/output /home/su-a
 
 WORKDIR /home/su-amaas/output
 
-## Publish JavaScript node package
-RUN npm config set //registry.npmjs.org/:_authToken=${NPM_TOKEN} && \
-    npm ${PACK_CMD} && \
-    npm config delete //registry.npmjs.org/:_authToken
+## Pack JavaScript node package
+RUN npm pack

@@ -7,7 +7,7 @@
   "main": "index.js",
   "type": "module",
   "engines": {
-    "node": ">=16.20.1"
+    "node": ">=22.11.0"
   },
   "scripts": {
     "prebuild": "rm -rf dist",
