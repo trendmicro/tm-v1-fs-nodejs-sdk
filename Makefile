@@ -17,19 +17,10 @@ all: clean build
 build:
 	docker build \
 		-t $(IMAGE_NAME) \
-		--build-arg PACK_CMD=pack \
 		--build-arg TM_AM_LOG_LEVEL=$(TM_AM_LOG_LEVEL) \
 		.
 	mkdir -p output
 	docker run --rm $(IMAGE_NAME) tar -cz file-security-sdk-$(VERSION).tgz | tar xzf - -C output
-
-publish:
-	docker build \
-		-t $(IMAGE_NAME) \
-		--build-arg NPM_TOKEN=$(NODE_AUTH_TOKEN) \
-		--build-arg PACK_CMD=publish \
-		--build-arg TM_AM_LOG_LEVEL=$(TM_AM_LOG_LEVEL) \
-		.
 
 test:
 	docker build \
@@ -44,4 +35,4 @@ clean:
 	rm -rf output
 	rm -rf coverage
 
-.PHONY: all build publish test clean
+.PHONY: all build test clean

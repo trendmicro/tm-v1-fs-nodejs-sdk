@@ -1,5 +1,9 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
+# This workflow builds the package in Docker and publishes it to npm when a
+# GitHub release is created. It uses OIDC trusted publishing — no long-lived
+# npm tokens are needed.
+#
+# For more information see:
+#   https://docs.npmjs.com/trusted-publishers
 
 name: NPM Publish
 
@@ -10,8 +14,25 @@ on:
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for OIDC trusted publishing and provenance
     steps:
-      - uses: actions/checkout@v3
-      - run: make publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - uses: actions/checkout@v4
+
+      - name: Build package in Docker
+        run: make build
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Upgrade npm for trusted publishing support
+        run: npm install -g npm@latest
+
+      - name: Verify tarball exists
+        run: ls -la ./output/
+
+      - name: Publish to npm
+        run: npm publish ./output/file-security-sdk-*.tgz
