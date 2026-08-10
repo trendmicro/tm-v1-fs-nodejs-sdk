@@ -1,4 +1,3 @@
-import { basename } from 'path'
 import { openSync, readSync, closeSync } from 'fs'
 
 import { C2S, S2C, Stage, Command } from './protos/scan'
@@ -8,6 +7,7 @@ import { AmaasScanResultVerbose } from './amaasScanResultVerbose'
 import { Logger } from './logger'
 import { ClientDuplexStream, Deadline } from '@grpc/grpc-js'
 import { getBufferHashes, getHashes } from './utils'
+import { heartbeatIntervalMs } from './constants'
 
 const sha1Prefix = 'sha1:'
 const sha256Prefix = 'sha256:'
@@ -26,23 +26,32 @@ export class ScanRun {
     this.logger = logger
     this.finalResult = Object.create(null)
     this.tags = tags ?? []
-    this.bulk = false
+    this.bulk = true
   }
 
   private async streamRun (fileName: string, fileSize: number, hashes: string[], pml: boolean, feedback: boolean, verbose: boolean, buff?: Buffer): Promise<AmaasScanResultObject | AmaasScanResultVerbose> {
     return await new Promise<AmaasScanResultObject | AmaasScanResultVerbose>((resolve, reject) => {
       const _deadline: Deadline = new Date().getTime() + this.deadline * 1000
       const stream = this.scanClient.run({ deadline: _deadline })
+      let heartbeatTimer: ReturnType<typeof setInterval> | undefined
+      const stopHeartbeat = (): void => {
+        if (heartbeatTimer !== undefined) {
+          clearInterval(heartbeatTimer)
+          heartbeatTimer = undefined
+        }
+      }
       stream.on('data', (response: S2C) => {
-        this.handleStreamData(response, fileName, verbose, stream, buff)
+        this.handleStreamData(response, fileName, verbose, stream, stopHeartbeat, buff)
       })
       stream.on('error', (err: Error) => {
+        stopHeartbeat()
         const error = ['Metadata key ""'].includes(String(err))
           ? new Error(`Failed to setup connection to AMaaS host. ${String(err)}`)
           : err
         reject(error)
       })
       stream.on('end', () => {
+        stopHeartbeat()
         resolve((verbose) ? this.finalResult as AmaasScanResultVerbose : this.finalResult as AmaasScanResultObject)
       })
 
@@ -51,12 +60,11 @@ export class ScanRun {
       const sha256Digest = hashes[0] ? `${sha256Prefix}${hashes[0]}` : ''
       this.logger.debug(`sha1: ${sha1Digest}`)
       this.logger.debug(`sha256: ${sha256Digest}`)
-      const fileNameToSet = buff !== undefined ? fileName : basename(fileName)
       const initRequest: C2S = {
         stage: Stage.INIT,
-        fileName: fileNameToSet,
+        fileName: fileName,
         rsSize: fileSize.toString(),
-        offset: 0,
+        offset: '0',
         chunk: new Uint8Array(),
         trendx: pml,
         fileSha1: sha1Digest,
@@ -67,6 +75,25 @@ export class ScanRun {
         verbose: verbose
       }
       stream.write(initRequest)
+
+      // Start sending heartbeat messages to keep the connection alive through ALB idle timeout
+      heartbeatTimer = setInterval(() => {
+        this.logger.debug('sending heartbeat')
+        stream.write({
+          stage: Stage.HEARTBEAT,
+          fileName: '',
+          rsSize: '0',
+          offset: '0',
+          chunk: new Uint8Array(),
+          trendx: false,
+          fileSha1: '',
+          fileSha256: '',
+          tags: [],
+          bulk: false,
+          spnFeedback: false,
+          verbose: false
+        })
+      }, heartbeatIntervalMs)
     })
   }
 
@@ -75,6 +102,7 @@ export class ScanRun {
     fileName: string,
     verbose: boolean,
     stream: ClientDuplexStream<C2S, S2C>,
+    stopHeartbeat: () => void,
     buff?: Buffer
   ): void {
     const cmd = response.cmd
@@ -82,7 +110,9 @@ export class ScanRun {
 
     if (cmd === Command.CMD_RETR) {
       let bulkLength: number[] = []
-      let bulkOffset: number[] = []
+      // int64 bulk_offset is generated as string[] by protobuf-ts (long_type_string),
+      // since file offsets can exceed the 32-bit int32 range for files > 2GiB.
+      let bulkOffset: string[] = []
 
       if (stage !== Stage.RUN) {
         throw new Error(`Received unexpected command ${cmd} and stage ${stage}.`)
@@ -104,11 +134,16 @@ export class ScanRun {
       const fd = buff !== undefined ? undefined : openSync(fileName, 'r')
 
       for (let i = 0; i < bulkLength.length; i++) {
+        // offsets are safe to represent as JS numbers (Number.MAX_SAFE_INTEGER ~ 9007 TiB)
+        const offsetNum = Number(bulkOffset[i])
+        if (!Number.isSafeInteger(offsetNum) || offsetNum < 0) {
+          throw new Error(`Invalid offset value received from server: ${bulkOffset[i]}`)
+        }
         this.logger.debug(`stage RUN, try to read ${bulkLength[i]} at offset ${bulkOffset[i]}`)
-        const chunk = buff !== undefined ? buff.subarray(bulkOffset[i], bulkOffset[i] + bulkLength[i]) : Buffer.alloc(bulkLength[i])
+        const chunk = buff !== undefined ? buff.subarray(offsetNum, offsetNum + bulkLength[i]) : Buffer.alloc(bulkLength[i])
 
         if (fd !== undefined) {
-          readSync(fd, chunk, 0, bulkLength[i], bulkOffset[i])
+          readSync(fd, chunk, 0, bulkLength[i], offsetNum)
         }
 
         const request: C2S = {
@@ -136,9 +171,11 @@ export class ScanRun {
       const result = response.result
       const resultJson = JSON.parse(result)
       this.finalResult = resultJson
+      stopHeartbeat()
       stream.end()
     } else {
       this.logger.debug('unknown command...')
+      stopHeartbeat()
       stream.end()
     }
   }

@@ -87,6 +87,9 @@ const runImpl = (call: any): void => {
         const end = getRandomNumber(start, rsSize - 1)
         call.write({ cmd: Command.CMD_RETR, stage: Stage.RUN, bulk_offset: [start], bulk_length: [end - start], length: end - start })
       }
+    } else if (stage === 'STAGE_HEARTBEAT') {
+      // Silently ignore heartbeat messages, matching server's HeartbeatStream behavior
+      return
     } else if (stage === 'STAGE_RUN') {
       // Send CMD_QUIT if maximum number of runs is reached
       if (counts >= maxRuns) {
@@ -348,7 +351,7 @@ describe('error testing', () => {
   })
   it('should return an error if invalid region', () => {
     const region = 'us1'
-    const error = new Error(`Invalid region: ${region}, region value should be one of ap-southeast-2,eu-central-1,ap-northeast-1,ap-southeast-1,us-east-1,ap-south-1,me-central-1,eu-west-2,ca-central-1,af-south-1`)
+    const error = new Error(`Invalid region: ${region}, region value should be one of ap-southeast-2,eu-central-1,ap-northeast-1,ap-southeast-1,us-east-1,ap-south-1,me-central-1,eu-west-2,ca-central-1,af-south-1,ap-southeast-3`)
     expect(() => {
       const amaasScanClient = new AmaasGrpcClient(region, authKey)
       expect(amaasScanClient).toBeUndefined()
