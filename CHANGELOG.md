@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 1.4.7 - 2026-08-10
+
+- Support new region ap-southeast-3 (Indonesia)
+- Support scan gateway for FSCS and FSVA
+- Add an Error Handling section to the README documenting SDK and service error codes and messages
+- Update dependencies
+- Fix CVE-2026-48712
+
+## 1.4.6 - 2026-06-24
+
+- `scanFile` now reports the file path you pass as the scan identifier, instead of only
+  its basename. Scan results (e.g. `foundMalwares[].fileName`) reflect the full path.
+
 ## 1.4.5 - 2026-03-18
 
 - Support new region af-south-1
