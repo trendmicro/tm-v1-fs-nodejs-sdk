@@ -1,9 +1,4 @@
-enum credentType {
-  token,
-  apikey,
-}
-
-type credentTypeString = keyof typeof credentType
+type credentTypeString = 'token' | 'apikey'
 
 export interface AmaasCredentials {
   credentType: credentTypeString
