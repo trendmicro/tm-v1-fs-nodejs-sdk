@@ -1,14 +1,7 @@
 import { sign, SignOptions } from 'jsonwebtoken'
 import { generateKeyPairSync } from 'crypto'
 
-enum tokenTypes {
-  valid,
-  invalid,
-  'invalid-format',
-  'not-json',
-}
-
-type tokenTypeString = keyof typeof tokenTypes
+type tokenTypeString = 'valid' | 'invalid' | 'invalid-format' | 'not-json'
 
 export const generateJwtToken = (kind: tokenTypeString | undefined = 'valid'): string => {
   const payload = {
