@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.4.8 - 2026-11-03
+
+- Update dependencies (@grpc/grpc-js ^1.14.6, typescript ^5.9.3, ts-jest ^29.4.15,
+  @types/node ^26.6.5, @typescript-eslint ^8.72.0)
+- Bump build runtime to Node 22.23.4 for October 2026 security fixes
+
 ## 1.4.7 - 2026-08-10
 
 - Support new region ap-southeast-3 (Indonesia)

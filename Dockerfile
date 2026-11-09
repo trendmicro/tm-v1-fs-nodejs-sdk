@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22.11.0-slim as build_env
+FROM node:22.23.4-slim as build_env
 
 RUN useradd -m su-amaas
 
@@ -44,7 +44,7 @@ COPY --chown=su-amaas:su-amaas __tests__ /home/su-amaas/__tests__
 RUN TM_AM_LOG_LEVEL=${TM_AM_LOG_LEVEL} npm test
 
 # Publish stage
-FROM node:22.11.0-slim
+FROM node:22.23.4-slim
 
 RUN useradd -m su-amaas
 

@@ -4,7 +4,7 @@ Follow the instructions below to build and run example code.
 
 ## Prerequisites
 
-- NodeJS version 22.11.0 or above
+- NodeJS version 22.23.4 or above
 - A Trend Vision One API key - for more information, see the [Trend Vision One API key documentation](https://docs.trendmicro.com/en-us/enterprise/trend-vision-one/administrative-setti/accountspartfoundati/api-keys.aspx).
 
 ## Build and Run Examples
@@ -105,8 +105,8 @@ The following instructions assumes you are at the `<top level>/client/ts/example
 
    |Key|Value|Default value|
    |---|---|---|
-   |TM_AM_SERVER_ADDR|`__YOUR_VISION_ONE_API_KEY_REGION__`|
-   |TM_AM_AUTH_KEY|`__YOUR_VISION_ONE_API_KEY__`|
+   |TM_AM_SERVER_ADDR|`__YOUR_VISION_ONE_API_KEY_REGION__`|—|
+   |TM_AM_AUTH_KEY|`__YOUR_VISION_ONE_API_KEY__`|—|
    |TM_AM_LOG_LEVEL|FATAL \| ERROR \| WARN \| INFO \| DEBUG| OFF |
 
 1. Navigate to 'lambda/' or 'lambda-esm/'.

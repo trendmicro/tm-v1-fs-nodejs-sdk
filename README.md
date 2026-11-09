@@ -11,7 +11,7 @@ Follow the steps below to set up your development environment and configure your
 
 Before installing the SDK, ensure you have the following:
 
-- Node.js version 22.11.0 or above
+- Node.js version 22.23.4 or above
 - Trend Vision One account associated with your region - for more information, see the [Trend Vision One account document](https://docs.trendmicro.com/en-us/documentation/article/trend-vision-one-accountspartfoundati).
 - Custom role with File Security permissions
 

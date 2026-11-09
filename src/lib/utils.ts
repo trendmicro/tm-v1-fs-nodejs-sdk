@@ -69,7 +69,7 @@ export const isJWT = (key: string): boolean => {
       return false
     }
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }

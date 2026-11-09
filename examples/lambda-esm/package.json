@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.299.0",
-    "esbuild": "^0.16.17",
+    "esbuild": "^0.28.2",
     "eslint": "^8.48.0"
   },
   "dependencies": {
